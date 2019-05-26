@@ -15,6 +15,10 @@ class BackgroundService : IntentService(BackgroundService::class.simpleName) {
     private var getItems: String? = null
     private var totalHarga: String? = null
 
+    init {
+        setIntentRedelivery(true)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show()
         return Service.START_NOT_STICKY
@@ -23,6 +27,7 @@ class BackgroundService : IntentService(BackgroundService::class.simpleName) {
     override fun onHandleIntent(intent: Intent?) {
         synchronized(true){
             if(intent?.extras != null){
+                Toast.makeText(this, "Intent Ditemukan", Toast.LENGTH_LONG).show()
                 try{
                     getTypeAction = intent.extras?.get("type").toString()
                     getData = JSONObject(intent.getStringExtra("data").toString())

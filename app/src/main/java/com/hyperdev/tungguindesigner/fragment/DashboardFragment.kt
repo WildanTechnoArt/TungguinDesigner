@@ -1,10 +1,16 @@
 package com.hyperdev.tungguindesigner.fragment
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.NotificationCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.CardView
 import android.util.Log
@@ -137,12 +143,16 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
                                 switchButton.setTextColor(Color.parseColor("#32AD4A"))
                                 SharedPrefManager.getInstance(context!!).sendStatus(true)
 
+                                notificationProperties("Tungguin", "Anda Sedang Aktif", false)
+
                                 val intent = Intent(context!!, BackgroundService::class.java)
                                 context!!.startService(intent)
                             }else{
                                 switchButton.text = "Nonaktif"
                                 SharedPrefManager.getInstance(context!!).sendStatus(false)
                                 switchButton.setTextColor(Color.parseColor("#FFD40101"))
+
+                                notificationProperties("Tungguin", "Anda Sedang Nonaktif", true)
 
                                 val intent = Intent(context!!, BackgroundService::class.java)
                                 context!!.stopService(intent)
@@ -165,6 +175,28 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
                 }
 
             })
+    }
+
+    private fun notificationProperties(title: String, message: String, status: Boolean){
+
+        val channelId = "Default"
+        val builder = NotificationCompat.Builder(context!!, channelId)
+            .setSmallIcon(R.drawable.ic_tungguin_notify)
+            .setDefaults(Notification.DEFAULT_ALL)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+        builder.setOngoing(true)
+        val manager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "Default channel", NotificationManager.IMPORTANCE_DEFAULT)
+            manager.createNotificationChannel(channel)
+        }
+        manager.notify(1, builder.build())
+        if(status){
+            manager.cancel(1)
+        }
     }
 
     @SuppressLint("SetTextI18n")
