@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">Tungguin Designer</string>
+    <string name="input_email">Masukan Email</string>
+    <string name="input_password">Password</string>
+    <item name="visible" type="id"/>
+    <item name="masked" type="id"/>
+    <item name="path_password_eye_mask_visible" type="id"/>
+    <item name="path_password_eye_mask_strike_through" type="id"/>
+
+    <string name="dashboard">Dashboard</string>
+    <string name="chat">Chat</string>
+    <string name="histori">Histori</string>
+    <string name="profil">Profil</string>
+    <string name="nama_designer">Nama</string>
+    <string name="email_designer">Email</string>
+    <string name="nomor_designer">Nomor Telepon</string>
+    <string name="edit_profil">Edit Profil</string>
+    <string name="ubah_password">Ubah Password</string>
+    <string name="txt_not_found_data">Tidak Ada Data</string>
+    <string name="testimoni">Testimoni</string>
+    <string name="teksLogout">Logout</string>
+    <string name="time">30 Sec</string>
+    <string name="txt_ex_order">Penawaran sudah berakhir, tunggu penawaran berikutnya.</string>
+    <string name="txt_total_order">Total Order : 0 Order</string>
+    <string name="txt_this_week_order">Order Minggu ini : 0</string>
+    <string name="txt_today_order">Order Hari ini : 0</string>
+</resources>

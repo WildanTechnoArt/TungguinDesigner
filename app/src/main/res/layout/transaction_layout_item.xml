@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="#FFDADADA"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/description"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/type"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="-"
+            android:textSize="14sp"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" android:textStyle="bold"
+            android:textColor="#000000"/>
+
+    <TextView
+            android:text="-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/listFormattedAmount"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginRight="8dp"
+            tools:ignore="HardcodedText" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+            android:text="-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/date"
+            android:textSize="14sp"
+            android:layout_marginTop="6dp"
+            app:layout_constraintTop_toBottomOf="@+id/type"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            tools:ignore="HardcodedText"/>
+
+    <TextView
+            android:text="-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/description"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="6dp"
+            app:layout_constraintTop_toBottomOf="@+id/date"
+            android:textSize="14sp"
+            tools:ignore="HardcodedText"/>
+
+</android.support.constraint.ConstraintLayout>

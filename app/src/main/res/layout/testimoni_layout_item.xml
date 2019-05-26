@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="#FFDADADA"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/testimoni_designer"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/listFormattedID"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="-"
+            android:textSize="14sp"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText"
+            android:textStyle="bold"/>
+
+    <TextView
+            android:text="Tip: Rp. 0,-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/listFormattedAmount"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginRight="8dp"
+            tools:ignore="HardcodedText"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/rating"/>
+
+    <TextView
+            android:text="-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/listFormattedDate"
+            android:textSize="14sp"
+            android:layout_marginTop="6dp"
+            app:layout_constraintTop_toBottomOf="@+id/listFormattedID"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            tools:ignore="HardcodedText"/>
+
+    <RatingBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rating"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:numStars="5"
+            android:clickable="false"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@+id/listFormattedDate"
+            style="@android:style/Widget.DeviceDefault.Light.RatingBar.Indicator"/>
+
+    <TextView
+            android:text="Testimoni"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_testimoni"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rating"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            tools:ignore="HardcodedText"/>
+
+    <TextView
+            android:text="-"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/testimoni_designer"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/txt_testimoni"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+            tools:ignore="HardcodedText" android:textStyle="bold|italic"/>
+
+</android.support.constraint.ConstraintLayout>
