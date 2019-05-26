@@ -92,8 +92,8 @@ class LoginActivity : AppCompatActivity() {
                             startActivity(intent)
                             finish()
                         }else -> {
-                        startActivity(Intent(this@LoginActivity, Dashboard::class.java))
-                        finish()
+                            startActivity(Intent(this@LoginActivity, Dashboard::class.java))
+                            finish()
                         }
                     }
                 }
