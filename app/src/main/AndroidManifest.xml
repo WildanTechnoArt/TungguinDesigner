@@ -70,10 +70,6 @@
                     android:resource="@xml/file_provider_paths"/>
         </provider>
 
-        <service
-                android:name=".fcm.BackgroundService"
-                android:exported="false"/>
-
         <receiver android:exported="false" android:name=".fcm.FcmReceiver"
                   android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
