@@ -28,7 +28,6 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
-import com.hyperdev.tungguindesigner.fcm.BackgroundService
 import com.hyperdev.tungguindesigner.model.announcement.AnnouncementData
 import com.hyperdev.tungguindesigner.model.chartorder.ChartData
 import com.hyperdev.tungguindesigner.model.chartorder.ChartItem
@@ -144,18 +143,12 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
                                 SharedPrefManager.getInstance(context!!).sendStatus(true)
 
                                 notificationProperties("Tungguin", "Anda Sedang Aktif", false)
-
-                                val intent = Intent(context!!, BackgroundService::class.java)
-                                context!!.startService(intent)
                             }else{
                                 switchButton.text = "Nonaktif"
                                 SharedPrefManager.getInstance(context!!).sendStatus(false)
                                 switchButton.setTextColor(Color.parseColor("#FFD40101"))
 
                                 notificationProperties("Tungguin", "Anda Sedang Nonaktif", true)
-
-                                val intent = Intent(context!!, BackgroundService::class.java)
-                                context!!.stopService(intent)
                             }
 
                         } catch (e: JSONException) {

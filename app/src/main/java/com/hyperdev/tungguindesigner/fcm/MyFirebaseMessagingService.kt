@@ -37,7 +37,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
         val channelId = "Default"
         val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(R.drawable.ic_tungguin_notify)
             .setDefaults(Notification.DEFAULT_ALL)
             .setContentTitle(title)
             .setContentText(message)

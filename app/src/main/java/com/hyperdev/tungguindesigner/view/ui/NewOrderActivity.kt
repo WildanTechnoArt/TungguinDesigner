@@ -147,6 +147,7 @@ class NewOrderActivity : AppCompatActivity(), GetOrderView.View {
         progressBar.visibility = View.GONE
         shadow.visibility = View.GONE
         Toast.makeText(this@NewOrderActivity, "Orderan Diterima", Toast.LENGTH_LONG).show()
+        startActivity(Intent(this@NewOrderActivity, Dashboard::class.java))
         finish()
     }
 
