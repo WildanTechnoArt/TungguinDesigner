@@ -15,6 +15,7 @@ import com.hyperdev.tungguindesigner.view.ui.Dashboard
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
+
         // Membuat Click Listener pada Notifikasi yang Muncul
         val data: MutableMap<String, String>? = remoteMessage?.data
         val type = data?.get("type").toString()
@@ -24,7 +25,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         when(type){
             "order_accepted" -> {
                 val intent = Intent(this, Dashboard::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 intent.putExtra("toHistoriOrder", true)
                 notificationProperties(title, message, intent)
             }

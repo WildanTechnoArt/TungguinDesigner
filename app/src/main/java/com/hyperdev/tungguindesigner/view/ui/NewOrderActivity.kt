@@ -45,7 +45,6 @@ class NewOrderActivity : AppCompatActivity(), GetOrderView.View {
     private var itemList: ArrayList<NewOrderItem> = arrayListOf()
     private var adapter by Delegates.notNull<OrderListAdapter>()
 
-
     // WebSocket
     private var socket: Socket? = null
 

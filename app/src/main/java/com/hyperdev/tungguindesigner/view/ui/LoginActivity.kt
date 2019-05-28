@@ -83,12 +83,14 @@ class LoginActivity : AppCompatActivity() {
                             intent.putExtra("sendOrderID", getOrderId)
                             intent.putExtra("sendItems", getItems)
                             intent.putExtra("sendTotalHarga", totalHarga)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
                             startActivity(intent)
                             finish()
                         }
                         "order_accepted" -> {
-                            startActivity(Intent(this@LoginActivity, Dashboard::class.java))
+                            val intent = Intent(this@LoginActivity, Dashboard::class.java)
                             intent.putExtra("toHistoriOrder", true)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
                             startActivity(intent)
                             finish()
                         }else -> {

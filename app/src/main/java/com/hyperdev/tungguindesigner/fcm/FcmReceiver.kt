@@ -31,6 +31,7 @@ class FcmReceiver : BroadcastReceiver() {
                         intent2.putExtra("sendOrderID", getOrderId)
                         intent2.putExtra("sendItems", getItems)
                         intent2.putExtra("sendTotalHarga", totalHarga)
+                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         context!!.startActivity(intent2)
                     }
                 }

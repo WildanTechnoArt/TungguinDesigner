@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -42,6 +43,7 @@ import com.hyperdev.tungguindesigner.repository.TransactionHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.ChartOrderView
 import com.hyperdev.tungguindesigner.view.DashboardView
+import com.hyperdev.tungguindesigner.view.ui.Dashboard
 import com.hyperdev.tungguindesigner.view.ui.WithdrawActivity
 import org.json.JSONException
 import retrofit2.Call
@@ -172,6 +174,9 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
 
     private fun notificationProperties(title: String, message: String, status: Boolean){
 
+        val intent = Intent(context!!, Dashboard::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context!!, 0, intent, PendingIntent.FLAG_ONE_SHOT)
         val channelId = "Default"
         val builder = NotificationCompat.Builder(context!!, channelId)
             .setSmallIcon(R.drawable.ic_tungguin_notify)
@@ -180,6 +185,8 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setVibrate(longArrayOf(0L))
+            .setContentIntent(pendingIntent)
         builder.setOngoing(true)
         val manager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
