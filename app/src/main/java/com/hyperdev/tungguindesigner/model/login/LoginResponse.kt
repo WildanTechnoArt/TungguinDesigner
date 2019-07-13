@@ -2,7 +2,7 @@ package com.hyperdev.tungguindesigner.model.login
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import com.hyperdev.tungguindesigner.network.ErrorResponse
+import com.hyperdev.tungguindesigner.network.HandleResponse
 
 data class LoginResponse (
     @SerializedName("data")
@@ -11,5 +11,5 @@ data class LoginResponse (
 
     @SerializedName("meta")
     @Expose
-    var getMeta: ErrorResponse? = null
+    var getMeta: HandleResponse? = null
 )

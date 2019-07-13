@@ -1,29 +1,37 @@
 package com.hyperdev.tungguindesigner.presenter
 
-import android.support.v7.app.AppCompatActivity.RESULT_OK
+import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import android.content.Context
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.widget.Toast
+import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
+import com.hyperdev.tungguindesigner.network.ConnectivityStatus
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
+import com.hyperdev.tungguindesigner.network.Response
 import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.ProfileView
 import com.miguelbcr.ui.rx_paparazzo2.RxPaparazzo
+import io.reactivex.Observer
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.subscribers.ResourceSubscriber
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
-class ProfilePresenter(private val view: ProfileView.View,
+class ProfilePresenter(private val context: Context,
+                       private val view: ProfileView.View,
                        private val profile: ProfileRepositoryImpl,
                        private val scheduler: SchedulerProvider) : ProfileView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun takeImageFromGallry(fragment: Fragment) {
+    override fun takeImageFromGallry(fragment: androidx.fragment.app.Fragment) {
         compositeDisposable.add(
             RxPaparazzo.single(fragment)
                 .usingGallery()
@@ -75,6 +83,90 @@ class ProfilePresenter(private val view: ProfileView.View,
                 }
             })
         )
+    }
+
+    override fun updateProfile(authHeader: String, accept: String, name: RequestBody,
+                               email: RequestBody, phone: RequestBody) {
+
+        view.displayProgress()
+
+        profile.updateProfile(authHeader, accept, name, email, phone)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(scheduler.io())
+            .unsubscribeOn(scheduler.io())
+            .subscribe(object : Observer<ProfileResponse> {
+                override fun onComplete() {
+                    view.onSuccessEditProfile()
+                }
+
+                override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
+                }
+
+                override fun onNext(t: ProfileResponse) {}
+
+                override fun onError(e: Throwable) {
+                    view.hideProgress()
+
+                    if(ConnectivityStatus.isConnected(context)){
+                        when (e) {
+                            is HttpException -> {
+                                val gson = Gson()
+                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val message = response.meta?.message.toString()
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                            }
+                            is SocketTimeoutException -> // connection errors
+                                view.noInternetConnection("Connection Timeout!")
+                        }
+                    }else{
+                        view.noInternetConnection("Tidak Terhubung Dengan Internet!")
+                    }
+                }
+
+            })
+    }
+
+    override fun updateProfileWithImage(authHeader: String, accept: String, name: RequestBody,
+                                        email: RequestBody, phone: RequestBody, image: MultipartBody.Part) {
+
+        view.displayProgress()
+
+        profile.updateProfileWithImage(authHeader, accept, name, email, phone, image)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(scheduler.io())
+            .unsubscribeOn(scheduler.io())
+            .subscribe(object : Observer<ProfileResponse> {
+                override fun onComplete() {
+                    view.onSuccessEditFotoProfile()
+                }
+
+                override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
+                }
+
+                override fun onNext(t: ProfileResponse) {}
+
+                override fun onError(e: Throwable) {
+                    view.hideProgress()
+
+                    if(ConnectivityStatus.isConnected(context)){
+                        when (e) {
+                            is HttpException -> {
+                                val gson = Gson()
+                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val message = response.meta?.message.toString()
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                            }
+                            is SocketTimeoutException -> // connection errors
+                                view.noInternetConnection("Connection Timeout!")
+                        }
+                    }else{
+                        view.noInternetConnection("Tidak Terhubung Dengan Internet!")
+                    }
+                }
+
+            })
     }
 
     override fun onDestroy() {

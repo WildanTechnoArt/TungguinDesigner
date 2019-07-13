@@ -7,5 +7,5 @@ data class Response (
 
     @SerializedName("meta")
     @Expose
-    var meta: ErrorResponse? = null
+    var meta: HandleResponse? = null
 )

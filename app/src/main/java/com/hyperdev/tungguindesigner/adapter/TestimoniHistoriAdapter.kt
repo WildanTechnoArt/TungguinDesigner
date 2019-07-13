@@ -1,7 +1,7 @@
 package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +11,7 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniItem
 
 class TestimoniHistoriAdapter(private var testimoniItem: ArrayList<TestimoniItem>)
-    :RecyclerView.Adapter<TestimoniHistoriAdapter.ViewHolder>(){
+    : RecyclerView.Adapter<TestimoniHistoriAdapter.ViewHolder>(){
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 

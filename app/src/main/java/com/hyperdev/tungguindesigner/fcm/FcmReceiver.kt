@@ -1,5 +1,6 @@
 package com.hyperdev.tungguindesigner.fcm
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,6 +15,7 @@ class FcmReceiver : BroadcastReceiver() {
     private var getItems: String? = null
     private var totalHarga: String? = null
 
+    @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context?, intent: Intent?) {
         if(intent?.extras != null){
             try{
@@ -31,8 +33,9 @@ class FcmReceiver : BroadcastReceiver() {
                         intent2.putExtra("sendOrderID", getOrderId)
                         intent2.putExtra("sendItems", getItems)
                         intent2.putExtra("sendTotalHarga", totalHarga)
-                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context!!.startActivity(intent2)
+                        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+                        context?.startActivity(intent2)
                     }
                 }
             }

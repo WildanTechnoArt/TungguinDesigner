@@ -15,71 +15,75 @@ import io.reactivex.subscribers.ResourceSubscriber
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
-class DashboardPresenter(private val view: DashboardView.View,
-                         private val dashboard: TransactionHisRepositoryImpl,
-                         private val scheduler: SchedulerProvider) : DashboardView.Presenter{
+class DashboardPresenter(
+    private val view: DashboardView.View,
+    private val dashboard: TransactionHisRepositoryImpl,
+    private val scheduler: SchedulerProvider
+) : DashboardView.Presenter {
 
     private val compositeDisposable = CompositeDisposable()
 
     override fun getDashboardData(token: String, context: Context) {
         view.displayProgress()
 
-        compositeDisposable.add(dashboard.getDashboard(token, "application/json")
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(scheduler.io())
-            .subscribeWith(object : ResourceSubscriber<TransactionResponse>(){
-                override fun onComplete() {
-                    view.onSuccess()
-                }
-
-                override fun onNext(t: TransactionResponse) {
-                    try{
-                        t.data?.let { view.loadSaldoData(it) }
-                    }catch(ex: Exception){
-                        ex.printStackTrace()
+        compositeDisposable.add(
+            dashboard.getDashboard(token, "application/json")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(scheduler.io())
+                .subscribeWith(object : ResourceSubscriber<TransactionResponse>() {
+                    override fun onComplete() {
+                        view.onSuccess()
                     }
-                }
 
-                override fun onError(e: Throwable) {
-                    e.printStackTrace()
-                    view.hideProgress()
-
-                    if(isConnected(context)){
-                        when (e) {
-                            is HttpException -> // non 200 error codes
-                                HandleError.handleError(e, e.code(), context)
-                            is SocketTimeoutException -> // connection errors
-                                Toast.makeText(context, "Connection Timeout!", Toast.LENGTH_LONG).show()
+                    override fun onNext(t: TransactionResponse) {
+                        try {
+                            t.data?.let { view.loadSaldoData(it) }
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
                         }
-                    }else{
-                        Toast.makeText(context, "Tidak Terhubung Dengan Internet!", Toast.LENGTH_LONG).show()
                     }
-                }
-            })
+
+                    override fun onError(e: Throwable) {
+                        e.printStackTrace()
+                        view.hideProgress()
+
+                        if (isConnected(context)) {
+                            when (e) {
+                                is HttpException -> // non 200 error codes
+                                    HandleError.handleError(e, e.code(), context)
+                                is SocketTimeoutException -> // connection errors
+                                    Toast.makeText(context, "Connection Timeout!", Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Tidak Terhubung Dengan Internet!", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                })
         )
     }
 
 
     override fun getAnnouncementData(token: String) {
 
-        compositeDisposable.add(dashboard.announcementDesigner(token)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(scheduler.io())
-            .subscribeWith(object : ResourceSubscriber<AnnouncementResponse>(){
-                override fun onComplete() {}
+        compositeDisposable.add(
+            dashboard.announcementDesigner(token)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(scheduler.io())
+                .subscribeWith(object : ResourceSubscriber<AnnouncementResponse>() {
+                    override fun onComplete() {}
 
-                override fun onNext(t: AnnouncementResponse) {
-                    try{
-                        t.data?.let { view.loaddAnnouncement(it) }
-                    }catch(ex: Exception){
-                        ex.printStackTrace()
+                    override fun onNext(t: AnnouncementResponse) {
+                        try {
+                            t.data?.let { view.loaddAnnouncement(it) }
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
+                        }
                     }
-                }
 
-                override fun onError(e: Throwable) {
-                    e.printStackTrace()
-                }
-            })
+                    override fun onError(e: Throwable) {
+                        e.printStackTrace()
+                    }
+                })
         )
     }
 

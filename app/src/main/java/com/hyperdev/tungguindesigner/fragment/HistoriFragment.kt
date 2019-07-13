@@ -1,14 +1,15 @@
 package com.hyperdev.tungguindesigner.fragment
 
 import android.os.Bundle
-import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.view.ViewPager
+import com.google.android.material.tabs.TabLayout
+import androidx.fragment.app.Fragment
+import androidx.viewpager.widget.ViewPager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.adapter.PagerAdapter
+import com.hyperdev.tungguindesigner.utils.UtilsContant.Companion.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
 
 class HistoriFragment : Fragment() {
 
@@ -26,7 +27,7 @@ class HistoriFragment : Fragment() {
         tabLayout.addTab(tabLayout.newTab().setText("Withdraw"))
 
         //Memanggil dan Memasukan Value pada Class PagerAdapter(FragmentManager dan JumlahTab)
-        val pageAdapter = PagerAdapter(childFragmentManager, tabLayout.tabCount)
+        val pageAdapter = PagerAdapter(childFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, tabLayout.tabCount)
 
         //Memasang Adapter pada ViewPager
         viewPager.adapter = pageAdapter
@@ -42,6 +43,7 @@ class HistoriFragment : Fragment() {
                 //Dipanggil ketika tab memasuki state/keadaan yang dipilih.
                 viewPager.currentItem = tab.position
             }
+
             override fun onTabUnselected(tab: TabLayout.Tab) {}
 
             override fun onTabReselected(tab: TabLayout.Tab) {}

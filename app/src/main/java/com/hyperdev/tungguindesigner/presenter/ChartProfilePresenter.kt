@@ -14,49 +14,50 @@ import io.reactivex.subscribers.ResourceSubscriber
 import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
-class ChartProfilePresenter(private val view: ChartOrderView.View,
-                            private val chart: ChartRepositoryImpl,
-                            private val scheduler: SchedulerProvider) : ChartOrderView.Presenter{
+class ChartProfilePresenter(
+    private val view: ChartOrderView.View,
+    private val chart: ChartRepositoryImpl,
+    private val scheduler: SchedulerProvider
+) : ChartOrderView.Presenter {
 
     private val compositeDisposable = CompositeDisposable()
 
     override fun getChartItem(token: String, context: Context) {
         view.displayProgress()
 
-        compositeDisposable.add(chart.getChartOrder(token, "application/json")
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(scheduler.io())
-            .subscribeWith(object : ResourceSubscriber<ChartResponse>(){
-                override fun onComplete() {
-                    view.hideProgress()
-                    view.onChartView()
-                }
-
-                override fun onNext(t: ChartResponse) {
-                    try{
-                        t.data?.let { it.item?.let { it1 -> view.displayChart(it1) } }
-                        t.data?.let { view.displayChartStat(it) }
-                    }catch(ex: Exception){
-                        ex.printStackTrace()
+        compositeDisposable.add(
+            chart.getChartOrder(token, "application/json")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(scheduler.io())
+                .subscribeWith(object : ResourceSubscriber<ChartResponse>() {
+                    override fun onComplete() {
+                        view.hideProgress()
                     }
-                }
 
-                override fun onError(e: Throwable) {
-                    e.printStackTrace()
-                    view.hideProgress()
-
-                    if(isConnected(context)){
-                        when (e) {
-                            is HttpException -> // non 200 error codes
-                                HandleError.handleError(e, e.code(), context)
-                            is SocketTimeoutException -> // connection errors
-                                Toast.makeText(context, "Connection Timeout!", Toast.LENGTH_LONG).show()
+                    override fun onNext(t: ChartResponse) {
+                        try {
+                            t.data?.let { view.displayChartStat(it) }
+                        } catch (ex: Exception) {
+                            ex.printStackTrace()
                         }
-                    }else{
-                        Toast.makeText(context, "Tidak Terhubung Dengan Internet!", Toast.LENGTH_LONG).show()
                     }
-                }
-            })
+
+                    override fun onError(e: Throwable) {
+                        e.printStackTrace()
+                        view.hideProgress()
+
+                        if (isConnected(context)) {
+                            when (e) {
+                                is HttpException -> // non 200 error codes
+                                    HandleError.handleError(e, e.code(), context)
+                                is SocketTimeoutException -> // connection errors
+                                    Toast.makeText(context, "Connection Timeout!", Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Tidak Terhubung Dengan Internet!", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                })
         )
     }
 

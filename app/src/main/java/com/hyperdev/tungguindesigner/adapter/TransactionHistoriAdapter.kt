@@ -1,7 +1,7 @@
 package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +10,7 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.transactionhistori.TransactionItem
 
 class TransactionHistoriAdapter(private var transactionItem: ArrayList<TransactionItem>)
-    :RecyclerView.Adapter<TransactionHistoriAdapter.ViewHolder>(){
+    : RecyclerView.Adapter<TransactionHistoriAdapter.ViewHolder>(){
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 

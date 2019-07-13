@@ -5,7 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +14,7 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.historiorder.HistoriOrderItem
 
 class OrderHistoriAdapter(private var orderItem: ArrayList<HistoriOrderItem>)
-    :RecyclerView.Adapter<OrderHistoriAdapter.ViewHolder>(){
+    : RecyclerView.Adapter<OrderHistoriAdapter.ViewHolder>(){
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 

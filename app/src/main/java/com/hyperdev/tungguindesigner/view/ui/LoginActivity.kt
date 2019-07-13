@@ -1,34 +1,26 @@
 package com.hyperdev.tungguindesigner.view.ui
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.net.ConnectivityManager
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.util.Log
+import com.google.android.material.snackbar.Snackbar
 import android.view.View
-import android.widget.Toast
-import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
-import com.hyperdev.tungguindesigner.model.login.DataLogin
-import com.hyperdev.tungguindesigner.model.login.LoginResponse
 import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.presenter.LoginPresenter
+import com.hyperdev.tungguindesigner.repository.LoginRepositoryImp
+import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateEmail
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
+import com.hyperdev.tungguindesigner.view.LoginView
 import kotlinx.android.synthetic.main.activity_login.*
-import org.json.JSONException
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.io.IOException
 import java.lang.NullPointerException
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), LoginView.View {
 
     //Deklarasi Variable
     private lateinit var emailUser: String
@@ -39,6 +31,7 @@ class LoginActivity : AppCompatActivity() {
     private var getData: JSONObject? = null
     private var getItems: String? = null
     private var totalHarga: String? = null
+    private lateinit var presenter: LoginView.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,16 +41,12 @@ class LoginActivity : AppCompatActivity() {
         baseApiService = NetworkUtil.getClient(this@LoginActivity)!!
             .create(BaseApiService::class.java)
 
-        btnLogin.setOnClickListener {
-            val connectivity  = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val networkInfo = connectivity.activeNetworkInfo
+        val repository = LoginRepositoryImp(baseApiService)
+        val scheduler = AppSchedulerProvider()
+        presenter = LoginPresenter(this@LoginActivity, repository, scheduler)
 
-            if (networkInfo != null && networkInfo.isConnected) {
-                disableView()
-                login()
-            } else {
-                Toast.makeText(this@LoginActivity, "Tidak terhubung dengan internet !", Toast.LENGTH_SHORT).show()
-            }
+        btnLogin.setOnClickListener {
+            login()
         }
     }
 
@@ -126,50 +115,16 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if(err == 0){
-            loginRequest(emailUser, passUser)
-        }else{
-            enableView()
+            presenter.loginUser(this@LoginActivity, emailUser, passUser)
         }
     }
 
-    private fun loginRequest(emailUser: String, passUser: String){
-        baseApiService.loginRequest(emailUser, passUser)
-            .enqueue(object : Callback<LoginResponse> {
-
-                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                    Log.e("RegisterPage.kt", "onFailure ERROR -> "+ t.message)
-                    showSnackBarMessage("Tidak terhubung dengan internet !")
-                    enableView()
-                }
-
-                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-
-                    if (response.isSuccessful) {
-                        Log.i("debug", "onResponse: BERHASIL")
-                        try {
-                            val data: DataLogin = response.body()?.getData!!
-                            SharedPrefManager.getInstance(this@LoginActivity).storeToken(data.token.toString())
-                            startActivity(Intent(this@LoginActivity, Dashboard::class.java))
-                            finishAffinity()
-                        } catch (e: JSONException) {
-                            e.printStackTrace()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-                    } else {
-                        Log.i("debug", "onResponse: GA BERHASIL")
-                        enableView()
-                        val gson = Gson()
-                        val message = gson.fromJson(response.errorBody()?.charStream(), LoginResponse::class.java)
-                        if(message != null){
-                            Toast.makeText(this@LoginActivity, message.getMeta?.message.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
+    override fun onSuccess() {
+        startActivity(Intent(this@LoginActivity, Dashboard::class.java))
+        finishAffinity()
     }
 
-    private fun disableView(){
+    override fun showPregressBar() {
         shadow.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         btnLogin.isEnabled = false
@@ -177,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
         pass.isEnabled = false
     }
 
-    private fun enableView(){
+    override fun hidePregressBar() {
         shadow.visibility = View.GONE
         progressBar.visibility = View.GONE
         btnLogin.isEnabled = true
@@ -185,7 +140,7 @@ class LoginActivity : AppCompatActivity() {
         pass.isEnabled = true
     }
 
-    private fun showSnackBarMessage(message: String) {
+    override fun noInternetConnection(message: String) {
         Snackbar.make(login_page, message, Snackbar.LENGTH_SHORT).show()
     }
 }

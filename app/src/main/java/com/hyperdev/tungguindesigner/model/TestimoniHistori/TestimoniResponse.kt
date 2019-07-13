@@ -2,13 +2,13 @@ package com.hyperdev.tungguindesigner.model.TestimoniHistori
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import com.hyperdev.tungguindesigner.network.ErrorResponse
+import com.hyperdev.tungguindesigner.network.HandleResponse
 
 data class TestimoniResponse (
 
     @SerializedName("meta")
     @Expose
-    var meta: ErrorResponse? = null,
+    var meta: HandleResponse? = null,
 
     @SerializedName("data")
     @Expose

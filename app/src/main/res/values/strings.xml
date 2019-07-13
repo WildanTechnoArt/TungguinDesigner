@@ -19,7 +19,7 @@
     <string name="txt_not_found_data">Tidak Ada Data</string>
     <string name="testimoni">Testimoni</string>
     <string name="teksLogout">Logout</string>
-    <string name="time">30 Sec</string>
+    <string name="time">0 Sec</string>
     <string name="txt_ex_order">Penawaran sudah berakhir, tunggu penawaran berikutnya.</string>
     <string name="txt_total_order">Total Order : 0 Order</string>
     <string name="txt_this_week_order">Order Minggu ini : 0</string>

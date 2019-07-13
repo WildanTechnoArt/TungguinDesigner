@@ -2,7 +2,7 @@ package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +11,10 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.withdrawhistori.WithdrawItem
 
 class WithdrawHistoriAdapter(private var historItem: ArrayList<WithdrawItem>)
-    :RecyclerView.Adapter<WithdrawHistoriAdapter.ViewHolder>(){
+    : RecyclerView.Adapter<WithdrawHistoriAdapter.ViewHolder>(){
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-        //Deklarasi View
         val getListFormattedDate: TextView = itemView.findViewById(R.id.listFormattedDate)
         val getListFormattedStatus: TextView = itemView.findViewById(R.id.listFormattedStatus)
         val getListFormattedAmount: TextView = itemView.findViewById(R.id.listFormattedAmount)

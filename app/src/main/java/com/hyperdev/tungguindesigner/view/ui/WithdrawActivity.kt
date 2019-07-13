@@ -1,22 +1,22 @@
 package com.hyperdev.tungguindesigner.view.ui
 
 import android.content.pm.ActivityInfo
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.google.android.material.snackbar.Snackbar
 import android.view.View
 import android.widget.Toast
-import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
-import com.hyperdev.tungguindesigner.model.requestwithdraw.WithdrawResponse
 import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.presenter.RequestWithdrawPresenter
+import com.hyperdev.tungguindesigner.repository.WithdrawRepositoryImp
+import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
+import com.hyperdev.tungguindesigner.view.RequestWithdrawView
 import kotlinx.android.synthetic.main.activity_withdraw.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class WithdrawActivity : AppCompatActivity() {
+class WithdrawActivity : AppCompatActivity(), RequestWithdrawView.View {
 
     private lateinit var inputOwnerBank: String
     private lateinit var inputNamaBank: String
@@ -24,6 +24,7 @@ class WithdrawActivity : AppCompatActivity() {
     private lateinit var inputNomorRek: String
     private lateinit var inputAmount: String
     private lateinit var baseApiService: BaseApiService
+    private lateinit var presenter: RequestWithdrawView.Presenter
     private lateinit var getToken: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,33 +51,8 @@ class WithdrawActivity : AppCompatActivity() {
         inputNomorRek = nomor_rekening.text.toString()
         inputAmount = get_amount.text.toString()
 
-        progressBar.visibility = View.VISIBLE
-        shadow.visibility = View.VISIBLE
-
-        baseApiService.requestWithdraw("Bearer $getToken", "application/json", inputOwnerBank,
+        presenter.withdrawWallet("Bearer $getToken", "application/json", inputOwnerBank,
             inputNamaBank, inputNomorRek, inputCabangBank,inputAmount)
-            .enqueue(object : Callback<WithdrawResponse>{
-                override fun onFailure(call: Call<WithdrawResponse>, t: Throwable) {
-                    progressBar.visibility = View.GONE
-                    shadow.visibility = View.GONE
-                    Toast.makeText(this@WithdrawActivity, t.message, Toast.LENGTH_LONG).show()
-                }
-
-                override fun onResponse(call: Call<WithdrawResponse>, response: Response<WithdrawResponse>) {
-                    if (response.isSuccessful) {
-                        finish()
-                        Toast.makeText(this@WithdrawActivity, "Permintaan Penarikan berhasil dikirim", Toast.LENGTH_SHORT).show()
-                    }else{
-                        progressBar.visibility = View.GONE
-                        shadow.visibility = View.GONE
-                        val gson = Gson()
-                        val message = gson.fromJson(response.errorBody()?.charStream(), WithdrawResponse::class.java)
-                        if(message != null){
-                            Toast.makeText(this@WithdrawActivity, message.meta?.message.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
     }
 
     private fun initMain(){
@@ -88,6 +64,29 @@ class WithdrawActivity : AppCompatActivity() {
         baseApiService = NetworkUtil.getClient(this@WithdrawActivity)!!
             .create(BaseApiService::class.java)
 
+        val repository = WithdrawRepositoryImp(baseApiService)
+        val scheduler = AppSchedulerProvider()
+        presenter = RequestWithdrawPresenter(this@WithdrawActivity, this, repository, scheduler)
+
+    }
+
+    override fun onSuccess() {
+        Toast.makeText(this@WithdrawActivity, "Permintaan Penarikan berhasil dikirim", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    override fun showPregressBar() {
+        progressBar.visibility = View.VISIBLE
+        shadow.visibility = View.VISIBLE
+    }
+
+    override fun hidePregressBar() {
+        progressBar.visibility = View.GONE
+        shadow.visibility = View.GONE
+    }
+
+    override fun noInternetConnection(message: String) {
+        Snackbar.make(withdraw_layout, message, Snackbar.LENGTH_SHORT).show()
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -1,30 +1,29 @@
 package com.hyperdev.tungguindesigner.view.ui
 
 import android.content.pm.ActivityInfo
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.util.Log
+import com.google.android.material.snackbar.Snackbar
 import android.view.View
 import android.widget.Toast
-import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
-import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
 import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.presenter.UpdatePassPresenter
+import com.hyperdev.tungguindesigner.repository.UpdatePassRepositoryImp
+import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
+import com.hyperdev.tungguindesigner.view.UpdatePassView
 import kotlinx.android.synthetic.main.activity_update_pass.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class UpdatePassActivity : AppCompatActivity() {
+class UpdatePassActivity : AppCompatActivity(), UpdatePassView.View {
 
     //Deklarasi Variable
     private lateinit var newPassword: String
     private lateinit var cPassword: String
     private lateinit var baseApiService: BaseApiService
+    private lateinit var presenter: UpdatePassView.Presenter
     private lateinit var getToken: String
     private lateinit var getName: String
     private lateinit var getEmail: String
@@ -47,9 +46,13 @@ class UpdatePassActivity : AppCompatActivity() {
         baseApiService = NetworkUtil.getClient(this@UpdatePassActivity)!!
             .create(BaseApiService::class.java)
 
-        getName = intent?.extras?.getString("userName")!!
-        getEmail = intent?.extras?.getString("userEmail")!!
-        getPhone = intent?.extras?.getString("userPhone")!!
+        val repository = UpdatePassRepositoryImp(baseApiService)
+        val scheduler = AppSchedulerProvider()
+        presenter = UpdatePassPresenter(this@UpdatePassActivity, this, repository, scheduler)
+
+        getName = intent?.getStringExtra("userName").toString()
+        getEmail = intent?.getStringExtra("userEmail").toString()
+        getPhone = intent?.getStringExtra("userPhone").toString()
 
         btnSavePass.setOnClickListener {
             changePassUser()
@@ -76,51 +79,32 @@ class UpdatePassActivity : AppCompatActivity() {
             if(newPassword != cPassword){
                 newpassConfirm.error = "Password yang dimasukan tidak sama!"
             }else{
-                disabledView()
-                savePassResponse(newPassword, cPassword)
+                progressBar.visibility = View.VISIBLE
+                newpass.isEnabled = false
+                newpassConfirm.isEnabled = false
+                presenter.updatePassword("Bearer $getToken", "application/json", getName, getEmail, getPhone, newPassword, cPassword)
             }
         }
     }
 
-    private fun savePassResponse(newPass: String, cPass: String){
-        baseApiService.updatePassword("Bearer $getToken", "application/json", getName, getEmail, getPhone, newPass, cPass)
-            .enqueue(object : Callback<ProfileResponse> {
-                override fun onFailure(call: Call<ProfileResponse>, t: Throwable) {
-                    Log.e("ChangePassActivity.kt", "onFailure ERROR -> "+ t.message)
-                    showSnackBarMessage("Tidak ada koneksi internet !")
-                    enabledView()
-                }
-
-                override fun onResponse(call: Call<ProfileResponse>, response: Response<ProfileResponse>) {
-                    if (response.isSuccessful) {
-                        Log.i("debug", "onResponse: BERHASIL")
-                        disabledView()
-                        Toast.makeText(this@UpdatePassActivity, "Password berhasil diubah", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }else{
-                        val gson = Gson()
-                        enabledView()
-                        val message = gson.fromJson(response.errorBody()?.charStream(), ProfileResponse::class.java)
-                        Toast.makeText(this@UpdatePassActivity, message.getMeta?.message.toString(), Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-            })
+    override fun onSuccess() {
+        Toast.makeText(this@UpdatePassActivity, "Password berhasil diubah", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
-    private fun enabledView(){
-        progressBar.visibility = View.GONE
-        newpass.isEnabled = true
-        newpassConfirm.isEnabled = true
-    }
-
-    private fun disabledView(){
+    override fun showPregressBar() {
         progressBar.visibility = View.VISIBLE
         newpass.isEnabled = false
         newpassConfirm.isEnabled = false
     }
 
-    private fun showSnackBarMessage(message: String) {
+    override fun hidePregressBar() {
+        progressBar.visibility = View.GONE
+        newpass.isEnabled = true
+        newpassConfirm.isEnabled = true
+    }
+
+    override fun noInternetConnection(message: String) {
         Snackbar.make(change_pass_layout, message, Snackbar.LENGTH_SHORT).show()
     }
 

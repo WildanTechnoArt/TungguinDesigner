@@ -35,7 +35,6 @@ class SharedPrefManager private constructor(context: Context) {
         }
     }
 
-    //Mendapatkan Token yang tersimpan didalam SharedPreference
     val token: String?
         get() {
             val preferences = mContext.getSharedPreferences(TOKEN_USER, Context.MODE_PRIVATE)

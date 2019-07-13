@@ -2,13 +2,13 @@ package com.hyperdev.tungguindesigner.model.ordernotification
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
-import com.hyperdev.tungguindesigner.network.ErrorResponse
+import com.hyperdev.tungguindesigner.network.HandleResponse
 
 data class CheckOrderResponse (
 
     @SerializedName("meta")
     @Expose
-    val meta: ErrorResponse? = null,
+    val meta: HandleResponse? = null,
 
     @SerializedName("data")
     @Expose

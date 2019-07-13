@@ -10,68 +10,55 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v4.app.NotificationCompat
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.widget.CardView
-import android.util.Log
+import androidx.fragment.app.Fragment
+import androidx.core.app.NotificationCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.cardview.widget.CardView
 import android.view.*
 import android.webkit.WebView
 import android.widget.Button
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
-import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.announcement.AnnouncementData
 import com.hyperdev.tungguindesigner.model.chartorder.ChartData
-import com.hyperdev.tungguindesigner.model.chartorder.ChartItem
-import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
 import com.hyperdev.tungguindesigner.model.transactionhistori.TransactionData
 import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.NetworkUtil
 import com.hyperdev.tungguindesigner.presenter.ChartProfilePresenter
 import com.hyperdev.tungguindesigner.presenter.DashboardPresenter
+import com.hyperdev.tungguindesigner.presenter.ToggleStatusPresenter
 import com.hyperdev.tungguindesigner.repository.ChartRepositoryImpl
+import com.hyperdev.tungguindesigner.repository.ToggleStatusRepositoryImp
 import com.hyperdev.tungguindesigner.repository.TransactionHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.ChartOrderView
 import com.hyperdev.tungguindesigner.view.DashboardView
+import com.hyperdev.tungguindesigner.view.ToggleStatusView
 import com.hyperdev.tungguindesigner.view.ui.Dashboard
 import com.hyperdev.tungguindesigner.view.ui.WithdrawActivity
-import org.json.JSONException
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.IOException
-import java.text.DecimalFormat
 
-class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
+class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
+    ToggleStatusView.View {
 
     private lateinit var mySaldo: TextView
     private lateinit var thisWeekOrder: TextView
     private lateinit var todayOrder: TextView
     private lateinit var totalOrder: TextView
     private lateinit var presenter: DashboardView.Presenter
+    private lateinit var presenterStatus: ToggleStatusView.Presenter
     private lateinit var chartPresenter: ChartOrderView.Presenter
     private lateinit var token: String
     private lateinit var baseApiService: BaseApiService
     private lateinit var refresh: SwipeRefreshLayout
     private lateinit var btnWithdraw: Button
     private lateinit var switchButton: Switch
-    private lateinit var chartStatistic: LineChart
-    private lateinit var dataSet1: LineDataSet
-    private var xAxisList: ArrayList<String> = arrayListOf()
-    private var ilineDataSet: ArrayList<ILineDataSet> = arrayListOf()
-    private var lineEntry: ArrayList<Entry> = arrayListOf()
     private lateinit var announcementText: WebView
     private lateinit var cardAnnouncement: CardView
+    private lateinit var cardOrderan: CardView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
@@ -83,16 +70,13 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
         refresh = view.findViewById(R.id.refreshLayout)
         btnWithdraw = view.findViewById(R.id.withdraw)
         switchButton = view.findViewById(R.id.status_designer)
-        chartStatistic = view.findViewById(R.id.dataChart)
         announcementText = view.findViewById(R.id.announcement)
         cardAnnouncement = view.findViewById(R.id.card_announcement)
+        cardOrderan = view.findViewById(R.id.card_orderan)
 
         loadData()
 
-        refresh.setOnRefreshListener {
-            presenter.getDashboardData("Bearer $token", context!!)
-            chartPresenter.getChartItem("Bearer $token", context!!)
-        }
+        refresh.isEnabled = false
 
         btnWithdraw.setOnClickListener {
             val intent = Intent(it.context, WithdrawActivity::class.java)
@@ -102,9 +86,9 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
 
         switchButton.setOnCheckedChangeListener { _, isChecked ->
 
-            if(isChecked){
+            if (isChecked) {
                 chechStatusToggler("1", true)
-            }else{
+            } else {
                 chechStatusToggler("0", false)
             }
 
@@ -114,69 +98,28 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun checkStatusDesigner(){
+    private fun checkStatusDesigner() {
         val getStatus: Boolean? = SharedPrefManager.getInstance(context!!).status
         switchButton.isChecked = getStatus!!
-        if(switchButton.isChecked){
+        if (switchButton.isChecked) {
             switchButton.text = "Aktif"
             switchButton.setTextColor(Color.parseColor("#32AD4A"))
-        }else{
+        } else {
             switchButton.text = "Nonaktif"
             switchButton.setTextColor(Color.parseColor("#FFD40101"))
         }
     }
 
-    private fun chechStatusToggler(status: String, kondisi: Boolean){
-        baseApiService.setToogleStatus("Bearer $token", "application/json",status)
-            .enqueue(object : Callback<ProfileResponse>{
-                override fun onFailure(call: Call<ProfileResponse>, t: Throwable) {
-                    Toast.makeText(context, t.message.toString(), Toast.LENGTH_LONG).show()
-                }
-
-                @SuppressLint("SetTextI18n")
-                override fun onResponse(call: Call<ProfileResponse>, response: Response<ProfileResponse>) {
-                    if (response.isSuccessful) {
-                        Log.i("debug", "onResponse: BERHASIL")
-                        try {
-
-                            if(kondisi){
-                                switchButton.text = "Aktif"
-                                switchButton.setTextColor(Color.parseColor("#32AD4A"))
-                                SharedPrefManager.getInstance(context!!).sendStatus(true)
-
-                                notificationProperties("Tungguin", "Anda Sedang Aktif", false)
-                            }else{
-                                switchButton.text = "Nonaktif"
-                                SharedPrefManager.getInstance(context!!).sendStatus(false)
-                                switchButton.setTextColor(Color.parseColor("#FFD40101"))
-
-                                notificationProperties("Tungguin", "Anda Sedang Nonaktif", true)
-                            }
-
-                        } catch (e: JSONException) {
-                            e.printStackTrace()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-                    } else {
-                        Log.i("debug", "onResponse: GA BERHASIL")
-                        val gson = Gson()
-                        val errorBody = gson.fromJson(response.errorBody()?.charStream(), ProfileResponse::class.java)
-                        val errorMessage = errorBody.getMeta?.message
-                        if(errorMessage != null){
-                            Toast.makeText(context, errorMessage.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-
-            })
+    private fun chechStatusToggler(status: String, kondisi: Boolean) {
+        presenterStatus.toggleStatus("Bearer $token", "application/json", status, kondisi)
     }
 
-    private fun notificationProperties(title: String, message: String, status: Boolean){
+    private fun notificationProperties(title: String, message: String, status: Boolean) {
 
         val intent = Intent(context!!, Dashboard::class.java)
         val pendingIntent = PendingIntent.getActivity(
-            context!!, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            context!!, 0, intent, PendingIntent.FLAG_ONE_SHOT
+        )
         val channelId = "Default"
         val builder = NotificationCompat.Builder(context!!, channelId)
             .setSmallIcon(R.drawable.ic_tungguin_notify)
@@ -185,6 +128,7 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setDefaults(Notification.DEFAULT_LIGHTS and Notification.DEFAULT_SOUND)
             .setVibrate(longArrayOf(0L))
             .setContentIntent(pendingIntent)
         builder.setOngoing(true)
@@ -194,7 +138,7 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
             manager.createNotificationChannel(channel)
         }
         manager.notify(1, builder.build())
-        if(status){
+        if (status) {
             manager.cancel(1)
         }
     }
@@ -207,70 +151,16 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
     }
 
     override fun loaddAnnouncement(text: AnnouncementData) {
-        if(text.announcement.toString() != "null"){
+        if (text.announcement.toString() != "null") {
+            cardOrderan.layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+            cardOrderan.layoutParams.height = resources.getDimensionPixelSize(R.dimen.cartHeight)
             cardAnnouncement.visibility = View.VISIBLE
             announcementText.loadData(text.announcement.toString(), "text/html", null)
-        }else{
+        } else {
+            cardOrderan.layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+            cardOrderan.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
             cardAnnouncement.visibility = View.GONE
         }
-    }
-
-    override fun displayChart(chartItem: List<ChartItem>) {
-
-        xAxisList.clear()
-        lineEntry.clear()
-        ilineDataSet.clear()
-        chartItem.forEach {
-            xAxisList.add(it.date.toString())
-        }
-
-        for ((index, value) in chartItem.withIndex()){
-            lineEntry.add(Entry(index.toFloat(), value.count!!.toFloat()))
-        }
-    }
-
-    override fun onChartView() {
-
-        // LineChart Properties
-        chartStatistic.isDragEnabled = true
-        chartStatistic.setScaleEnabled(false)
-        chartStatistic.animateY(1000)
-        chartStatistic.xAxis.valueFormatter = IndexAxisValueFormatter(xAxisList)
-        chartStatistic.description.text = "Orderan Minggu Ini"
-        chartStatistic.axisRight.isEnabled = false
-        chartStatistic.isDragEnabled = true
-        chartStatistic.setScaleEnabled(true)
-        chartStatistic.setTouchEnabled(false)
-
-        // LineChart set Legend
-        val legend = chartStatistic.legend
-        legend.form = Legend.LegendForm.LINE
-
-        // Left YAxis Properties
-        val leftAxis = chartStatistic.axisLeft
-        leftAxis.enableGridDashedLine(10f, 10f, 0f)
-        leftAxis.setDrawLimitLinesBehindData(true)
-
-        dataSet1 = LineDataSet(lineEntry, "Order")
-
-        // Style Properties
-        dataSet1.fillAlpha = 110
-        dataSet1.color = Color.GREEN
-        dataSet1.lineWidth = 3f
-        dataSet1.valueTextSize = 10f
-        dataSet1.valueTextColor = Color.BLACK
-        dataSet1.valueFormatter = IntegerFormatter()
-        dataSet1.setDrawFilled(true)
-        dataSet1.fillColor = Color.GREEN
-        dataSet1.circleRadius = 3f
-        dataSet1.setDrawCircleHole(false)
-        dataSet1.setCircleColor(Color.BLACK)
-
-        ilineDataSet.add(dataSet1)
-
-        val data = LineData(ilineDataSet)
-        chartStatistic.data = data
-        chartStatistic.invalidate()
     }
 
     override fun onResume() {
@@ -280,7 +170,7 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
         presenter.getAnnouncementData("Bearer $token")
     }
 
-    private fun loadData(){
+    private fun loadData() {
         token = SharedPrefManager.getInstance(context!!).token.toString()
 
         baseApiService = NetworkUtil.getClient(context!!)!!
@@ -293,10 +183,52 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
         val chartRequest = ChartRepositoryImpl(baseApiService)
         chartPresenter = ChartProfilePresenter(this, chartRequest, scheduler)
 
+        val toggleRequest = ToggleStatusRepositoryImp(baseApiService)
+        presenterStatus = ToggleStatusPresenter(context!!, this, toggleRequest, scheduler)
+
     }
 
+    override fun showToggleProgress() {
+        refresh.isRefreshing = true
+    }
+
+    override fun hideTogglePregress() {
+        refresh.isRefreshing = false
+    }
+
+    override fun noInternetConnection(message: String) {
+        Toast.makeText(context!!, message, Toast.LENGTH_SHORT).show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    override fun onSuccessSendStatus(kondisi: Boolean) {
+        refresh.isRefreshing = false
+        try {
+
+            if (kondisi) {
+                switchButton.text = "Aktif"
+                switchButton.setTextColor(Color.parseColor("#32AD4A"))
+                SharedPrefManager.getInstance(context!!).sendStatus(true)
+
+                notificationProperties("Tungguin", "Anda Sedang Aktif", false)
+            } else {
+                switchButton.text = "Nonaktif"
+                SharedPrefManager.getInstance(context!!).sendStatus(false)
+                switchButton.setTextColor(Color.parseColor("#FFD40101"))
+
+                notificationProperties("Tungguin", "Anda Sedang Nonaktif", true)
+            }
+
+        } catch (e2: IOException) {
+            e2.printStackTrace()
+        } catch (e3: KotlinNullPointerException) {
+            e3.printStackTrace()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     override fun loadSaldoData(saldo: TransactionData) {
-        mySaldo.text = saldo.balance.toString()
+        mySaldo.text = "Saldo : ${saldo.balance.toString()}"
     }
 
     override fun displayProgress() {
@@ -316,14 +248,5 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View {
         super.onDestroy()
         presenter.onDestroy()
         chartPresenter.onDestroy()
-    }
-}
-
-internal class IntegerFormatter : IndexAxisValueFormatter() {
-
-    private val mFormat: DecimalFormat = DecimalFormat("###,###,##0")
-
-    override fun getFormattedValue(value: Float): String {
-        return mFormat.format(value.toDouble())
     }
 }

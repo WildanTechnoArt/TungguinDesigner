@@ -1,7 +1,7 @@
 package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +10,10 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.NewOrderItem
 
 class OrderListAdapter(private var item: ArrayList<NewOrderItem>)
-    :RecyclerView.Adapter<OrderListAdapter.ViewHolder>(){
+    : RecyclerView.Adapter<OrderListAdapter.ViewHolder>(){
 
     inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
-        //Deklarasi View
         val listProductName: TextView = itemView.findViewById(R.id.nama_desain)
         val listFormattedAmount: TextView = itemView.findViewById(R.id.desain_price)
         val listProductCount: TextView = itemView.findViewById(R.id.number_desain)

@@ -15,12 +15,12 @@ android {
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
         // Tungguin.com API Configuration
-        buildConfigField "String", "BASE_URL", "\"https://tungguin.hyperdev.id/\""
-        buildConfigField "String", "MIDTRANS_CLIENTID", "\"SB-Mid-client-u4FKbI73iZcOqvJS\""
+        buildConfigField "String", "BASE_URL", "\"https://tungguin.hyperdev.id\""
+        buildConfigField "String", "WEBSOCKET_URL", "\"https://tungguin-socket.azishapidin.com/\""
     }
     buildTypes {
         release {
@@ -31,8 +31,6 @@ android {
 
     lintOptions {
         checkReleaseBuilds false
-        // Or, if you prefer, you can continue to check for errors in release builds,
-        // but continue the build even when errors are found:
         abortOnError false
     }
 
@@ -47,18 +45,18 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     //noinspection GradleCompatible
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     //Icon / Image
-    implementation 'com.android.support:support-vector-drawable:28.0.0'
+    implementation 'androidx.vectordrawable:vectordrawable:1.1.0-rc01'
     implementation 'de.hdodenhof:circleimageview:3.0.0'
 
     //Material Design
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha07'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta01'
+    implementation 'androidx.cardview:cardview:1.0.0'
 
     //retrofit 2
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
@@ -75,7 +73,7 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.8.0'
 
     // For using the Midtrans Sandbox
-    implementation 'com.midtrans:uikit:1.21.2-SANDBOX'
+    implementation 'com.midtrans:uikit:1.21.2'
 
     // gson
     implementation 'com.google.code.gson:gson:2.8.5'
@@ -89,20 +87,20 @@ dependencies {
     implementation 'com.github.nkzawa:socket.io-client:0.5.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-core:16.0.9'
-    implementation 'com.google.firebase:firebase-messaging:18.0.0'
+    implementation 'com.google.firebase:firebase-core:17.0.0'
+    implementation 'com.google.firebase:firebase-messaging:19.0.1'
 
     // Dagger 2
     implementation "com.google.dagger:dagger-android-support:2.12"
     kapt "com.google.dagger:dagger-compiler:2.12"
-    kapt "com.google.dagger:dagger-android-processor:2.12"
+    kapt "com.google.dagger:dagger-android-processor:2.16"
 
     // MP AndroidCart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.21"
+    androidTestImplementation 'androidx.test:runner:1.3.0-alpha01'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0-alpha01'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.40"
 }
 apply plugin: 'com.google.gms.google-services'

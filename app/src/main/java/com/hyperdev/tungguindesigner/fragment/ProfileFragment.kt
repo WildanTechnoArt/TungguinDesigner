@@ -4,34 +4,35 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.design.widget.TextInputEditText
-import android.support.design.widget.TextInputLayout
-import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
-import android.util.Log
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import androidx.fragment.app.Fragment
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.GlideApp
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.profile.DataUser
-import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
 import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.NetworkUtil
 import com.hyperdev.tungguindesigner.presenter.ProfilePresenter
+import com.hyperdev.tungguindesigner.presenter.RemoveTokenFCMPresenter
 import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
+import com.hyperdev.tungguindesigner.repository.TokenFCMRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateEmail
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
 import com.hyperdev.tungguindesigner.view.ProfileView
+import com.hyperdev.tungguindesigner.view.RemoveTokenFCMView
 import com.hyperdev.tungguindesigner.view.ui.LoginActivity
 import com.hyperdev.tungguindesigner.view.ui.UpdatePassActivity
 import com.miguelbcr.ui.rx_paparazzo2.entities.FileData
@@ -40,12 +41,9 @@ import kotlinx.android.synthetic.main.fragment_profile.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
 
-class ProfileFragment : Fragment(), ProfileView.View {
+class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
 
     // View
     private lateinit var btnEditProfile: Button
@@ -59,8 +57,10 @@ class ProfileFragment : Fragment(), ProfileView.View {
     private lateinit var nameLayout: TextInputLayout
     private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var myToolbar: Toolbar
+    private lateinit var profileLayout: ConstraintLayout
 
     private lateinit var presenter: ProfileView.Presenter
+    private lateinit var presenterFCM: RemoveTokenFCMView.Presenter
     private lateinit var baseApiService: BaseApiService
     private lateinit var getToken: String
     private lateinit var namaUser: RequestBody
@@ -86,9 +86,10 @@ class ProfileFragment : Fragment(), ProfileView.View {
         nameLayout = view.findViewById(R.id.nameLayout)
         refreshLayout = view.findViewById(R.id.refreshLayout)
         btnTakePhoto = view.findViewById(R.id.btn_takePhoto)
+        profileLayout = view.findViewById(R.id.profile_layout)
         myToolbar = view.findViewById(R.id.toolbar) as Toolbar
 
-        ((activity as AppCompatActivity).setSupportActionBar(myToolbar))
+        ((context as AppCompatActivity).setSupportActionBar(myToolbar))
 
         refreshLayout.setOnRefreshListener {
             presenter.getUserProfile("Bearer $getToken", context!!)
@@ -128,6 +129,28 @@ class ProfileFragment : Fragment(), ProfileView.View {
         return RequestBody.create(MediaType.parse("plain/text"), data)
     }
 
+    @SuppressLint("SetTextI18n")
+    override fun onSuccessEditProfile() {
+        btnEditPass.text = "Ubah Password"
+        presenter.getUserProfile("Bearer $getToken", context!!)
+        disabledView()
+        refreshLayout.isRefreshing = false
+        Toast.makeText(context!!, "Data Profil Berhasil Diubah", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onSuccessEditFotoProfile() {
+        context?.let {
+            GlideApp.with(it)
+                .load(file)
+                .into(profile_image)
+        }
+        Toast.makeText(context!!, "Foto Profil Berhasil Diubah", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun noInternetConnection(message: String) {
+        Snackbar.make(profileLayout, message, Snackbar.LENGTH_SHORT).show()
+    }
+
     override fun loadFile(file: FileData?) {
 
         refreshLayout.isRefreshing = true
@@ -154,11 +177,12 @@ class ProfileFragment : Fragment(), ProfileView.View {
             .create(BaseApiService::class.java)
 
         val request = ProfileRepositoryImpl(baseApiService)
+        val requestFCM = TokenFCMRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
 
-        presenter = ProfilePresenter(this, request, scheduler)
+        presenter = ProfilePresenter(context!!, this, request, scheduler)
         presenter.getUserProfile("Bearer $getToken", context!!)
-
+        presenterFCM = RemoveTokenFCMPresenter(context!!, this, requestFCM, scheduler)
     }
 
     private fun editProfile(){
@@ -185,87 +209,27 @@ class ProfileFragment : Fragment(), ProfileView.View {
 
         if(err == 0){
             if(updateImage){
-                editRequestWithImage(namaUser, emailUser, nomorUser)
+                presenter.updateProfileWithImage("Bearer $getToken", "application/json",
+                    namaUser, emailUser, nomorUser, imageFile)
                 updateImage = false
             }else{
-                editRequest(namaUser, emailUser, nomorUser)
+                presenter.updateProfile("Bearer $getToken", "application/json",
+                    namaUser, emailUser, nomorUser)
             }
         }
     }
 
-    private fun editRequest(name: RequestBody, email: RequestBody, number: RequestBody){
-        refreshLayout.isRefreshing = true
-        baseApiService.updateProfile("Bearer $getToken", "application/json", name, email, number)
-            .enqueue(object : Callback<ProfileResponse> {
-
-                override fun onFailure(call: Call<ProfileResponse>, t: Throwable) {
-                    Log.e("Profile.kt", "onFailure ERROR -> "+ t.message)
-                    showSnackBarMessage("Tidak ada koneksi internet !")
-                    refreshLayout.isRefreshing = false
-                }
-
-                @SuppressLint("SetTextI18n")
-                override fun onResponse(call: Call<ProfileResponse>, response: Response<ProfileResponse>) {
-                    if (response.isSuccessful) {
-                        Log.i("debug", "onResponse: BERHASIL")
-                        btnEditPass.text = "Ubah Password"
-                        presenter.getUserProfile("Bearer $getToken", context!!)
-                        disabledView()
-                        refreshLayout.isRefreshing = false
-                        Toast.makeText(context!!, "Data Profil Berhasil Diubah", Toast.LENGTH_SHORT).show()
-                    }else{
-                        refreshLayout.isRefreshing = false
-                        val gson = Gson()
-                        val message = gson.fromJson(response.errorBody()?.charStream(), ProfileResponse::class.java)
-                        if(message != null){
-                            Toast.makeText(context!!, message.getMeta?.message.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
+    private fun logoutAndRemoveToken(){
+        presenterFCM.removeTokenFCM("Bearer $getToken", "application/json", null)
     }
 
-    private fun editRequestWithImage(name: RequestBody, email: RequestBody, number: RequestBody){
-        baseApiService.updateProfileWithImage("Bearer $getToken", "application/json", name, email, number, imageFile)
-            .enqueue(object : Callback<ProfileResponse> {
-
-                override fun onFailure(call: Call<ProfileResponse>, t: Throwable) {
-                    Log.e("Profile.kt", "onFailure ERROR -> "+ t.message)
-                    refreshLayout.isRefreshing = false
-                    showSnackBarMessage("Tidak ada koneksi internet !")
-                }
-
-                @SuppressLint("SetTextI18n")
-                override fun onResponse(call: Call<ProfileResponse>, response: Response<ProfileResponse>) {
-                    if (response.isSuccessful) {
-                        Log.i("debug", "onResponse: BERHASIL")
-                        GlideApp.with(this@ProfileFragment)
-                            .load(file)
-                            .into(profile_image)
-                        Toast.makeText(context!!, "Foto Profil Berhasil Diubah", Toast.LENGTH_SHORT).show()
-                    }else{
-                        refreshLayout.isRefreshing = false
-                        val gson = Gson()
-                        val message = gson.fromJson(response.errorBody()?.charStream(), ProfileResponse::class.java)
-                        if(message != null){
-                            Toast.makeText(context!!, message.getMeta?.message.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
-    }
-
-    private fun showSnackBarMessage(message: String) {
-        Snackbar.make(profile_layout, message, Snackbar.LENGTH_SHORT).show()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater?.inflate(R.menu.option_view_menu, menu)
+        inflater.inflate(R.menu.option_view_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when(item?.itemId){
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
             R.id.logout -> {
                 val logout = AlertDialog.Builder(context!!)
                 logout.setTitle("Konfirmasi")
@@ -274,9 +238,7 @@ class ProfileFragment : Fragment(), ProfileView.View {
                     d.dismiss()
                 }
                 logout.setPositiveButton("Ya") { _, _ ->
-                    SharedPrefManager.getInstance(context!!).deleteToken()
-                    startActivity(Intent(context!!, LoginActivity::class.java))
-                    (context as Activity).finish()
+                    logoutAndRemoveToken()
                 }
                 logout.setCancelable(false)
                 logout.create()
@@ -298,6 +260,20 @@ class ProfileFragment : Fragment(), ProfileView.View {
         nameDesigner.setText(profileItem.name.toString())
         emailDesigner.setText(profileItem.email.toString())
         nomorDesigner.setText(profileItem.phoneNumber.toString())
+    }
+
+    override fun onSuccess() {
+        SharedPrefManager.getInstance(context!!).deleteToken()
+        startActivity(Intent(context!!, LoginActivity::class.java))
+        (context as Activity).finish()
+    }
+
+    override fun showPregressBar() {
+        refreshLayout.isRefreshing = true
+    }
+
+    override fun hidePregressBar() {
+        refreshLayout.isRefreshing = false
     }
 
     override fun displayProgress() {
