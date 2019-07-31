@@ -3,37 +3,27 @@ package com.hyperdev.tungguindesigner.adapter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Paint
-import android.net.Uri
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.hyperdev.tungguindesigner.R
-import com.hyperdev.tungguindesigner.model.historiorder.HistoriOrderItem
+import com.hyperdev.tungguindesigner.model.historiorder.HistoryOrderItem
+import com.hyperdev.tungguindesigner.utils.UtilsContant.Companion.HASHED_ID
+import com.hyperdev.tungguindesigner.view.ui.DetailOrderActivity
+import kotlinx.android.synthetic.main.history_order_item.view.*
 
-class OrderHistoriAdapter(private var orderItem: ArrayList<HistoriOrderItem>)
-    : RecyclerView.Adapter<OrderHistoriAdapter.ViewHolder>(){
-
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-        //Deklarasi View
-        val getListFormattedDate: TextView = itemView.findViewById(R.id.listFormattedDate)
-        val getListFormattedStatus: TextView = itemView.findViewById(R.id.listFormattedStatus)
-        val getListFormattedAmount: TextView = itemView.findViewById(R.id.listFormattedAmount)
-        val getListFormattedID: TextView = itemView.findViewById(R.id.listFormattedID)
-        val getListDesignerLink: TextView = itemView.findViewById(R.id.listDetailDesignerLink)
-    }
+class OrderHistoriAdapter(private var orderItem: ArrayList<HistoryOrderItem>) :
+    RecyclerView.Adapter<OrderHistoriAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.order_layout_item, parent, false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.history_order_item, parent, false)
         return ViewHolder(v)
     }
 
     override fun getItemCount(): Int = orderItem.size
 
-    fun refreshAdapter(orderList: List<HistoriOrderItem>) {
+    fun refreshAdapter(orderList: List<HistoryOrderItem>) {
         this.orderItem.addAll(orderList)
         notifyItemRangeChanged(0, this.orderItem.size)
     }
@@ -46,34 +36,34 @@ class OrderHistoriAdapter(private var orderItem: ArrayList<HistoriOrderItem>)
         val getLabel = orderItem[position].statusFormatted?.label.toString()
         val getAmount = orderItem[position].priceAfterCutFormatted.toString()
         val getID = orderItem[position].formattedId.toString()
-        val getDesignerLink = orderItem[position].designerDetailLink.toString()
+        val getOrderId = orderItem[position].hashedId.toString()
 
-        holder.getListFormattedDate.text = getDate
-        holder.getListFormattedAmount.text = getAmount
-        holder.getListFormattedID.text = getID
+        holder.itemView.listFormattedDate.text = getDate
+        holder.itemView.listFormattedAmount.text = getAmount
+        holder.itemView.listFormattedID.text = getID
 
-        when(getStatus){
+        when (getStatus) {
             "in_progress" -> {
-                holder.getListFormattedStatus.setBackgroundResource(R.drawable.order_round_no_hover)
+                holder.itemView.listFormattedStatus.setBackgroundResource(R.drawable.order_round_no_hover)
             }
             "pending" -> {
-                holder.getListFormattedStatus.setBackgroundResource(R.drawable.orange_round_no_hover)
+                holder.itemView.listFormattedStatus.setBackgroundResource(R.drawable.orange_round_no_hover)
             }
             "expired" -> {
-                holder.getListFormattedStatus.setBackgroundResource(R.drawable.red_round_no_hover)
+                holder.itemView.listFormattedStatus.setBackgroundResource(R.drawable.red_round_no_hover)
             }
             "success" -> {
-                holder.getListFormattedStatus.setBackgroundResource(R.drawable.order_round_no_hover)
+                holder.itemView.listFormattedStatus.setBackgroundResource(R.drawable.order_round_no_hover)
             }
         }
-        holder.getListFormattedStatus.text = getLabel
+        holder.itemView.listFormattedStatus.text = getLabel
 
-        holder.getListDesignerLink.paintFlags = Paint.UNDERLINE_TEXT_FLAG
-        holder.getListDesignerLink.setOnClickListener {
-            val intent = Intent()
-            intent.action = Intent.ACTION_VIEW
-            intent.data = Uri.parse(getDesignerLink)
+        holder.itemView.btn_detail_order.setOnClickListener {
+            val intent = Intent(it.context, DetailOrderActivity::class.java)
+            intent.putExtra(HASHED_ID, getOrderId)
             (it.context as Activity).startActivity(intent)
         }
     }
+
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 }

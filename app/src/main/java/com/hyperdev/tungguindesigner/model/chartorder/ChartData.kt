@@ -17,6 +17,10 @@ data class ChartData (
     @Expose
     var total: Int? = null,
 
+    @SerializedName("total_fee")
+    @Expose
+    var totalFee: String? = null,
+
     @SerializedName("chart")
     @Expose
     var item: List<ChartItem>? = null

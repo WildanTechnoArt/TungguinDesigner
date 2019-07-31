@@ -2,7 +2,7 @@ package com.hyperdev.tungguindesigner.presenter
 
 import android.content.Context
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
-import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.ProfileView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -11,7 +11,7 @@ import io.reactivex.subscribers.ResourceSubscriber
 
 class DesignerPresenter(
     private val view: ProfileView.DesignerId,
-    private val profile: ProfileRepositoryImpl,
+    private val baseApiService: BaseApiService,
     private val scheduler: SchedulerProvider
 ) : ProfileView.DesignerPresenter {
 
@@ -19,7 +19,7 @@ class DesignerPresenter(
 
     override fun getDesignerId(token: String, context: Context) {
         compositeDisposable.add(
-            profile.getProfile(token, "application/json")
+            baseApiService.getProfile(token, "application/json")
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(scheduler.io())
                 .subscribeWith(object : ResourceSubscriber<ProfileResponse>() {

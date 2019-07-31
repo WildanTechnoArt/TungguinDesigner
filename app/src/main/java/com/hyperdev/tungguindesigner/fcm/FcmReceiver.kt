@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.hyperdev.tungguindesigner.utils.UtilsContant.Companion.HASHED_ID
 import com.hyperdev.tungguindesigner.view.ui.NewOrderActivity
 import org.json.JSONObject
 
+@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class FcmReceiver : BroadcastReceiver() {
 
     private var getTypeAction: String? = null
@@ -30,7 +32,7 @@ class FcmReceiver : BroadcastReceiver() {
                 when(getTypeAction){
                     "orderAsk" -> {
                         val intent2 = Intent(context, NewOrderActivity::class.java)
-                        intent2.putExtra("sendOrderID", getOrderId)
+                        intent2.putExtra(HASHED_ID, getOrderId)
                         intent2.putExtra("sendItems", getItems)
                         intent2.putExtra("sendTotalHarga", totalHarga)
                         intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or

@@ -3,9 +3,9 @@ package com.hyperdev.tungguindesigner.presenter
 import android.content.Context
 import android.widget.Toast
 import com.hyperdev.tungguindesigner.model.withdrawhistori.WithdrawHisResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
-import com.hyperdev.tungguindesigner.repository.WithdrawHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.WithdrawHisView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,7 +15,7 @@ import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
 class HisWithdrawPresenter(private val view: WithdrawHisView.View,
-                           private val withdraw: WithdrawHisRepositoryImpl,
+                           private val baseApiService: BaseApiService,
                            private val scheduler: SchedulerProvider) : WithdrawHisView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -23,7 +23,7 @@ class HisWithdrawPresenter(private val view: WithdrawHisView.View,
     override fun getHistoriWithdraw(token: String, context: Context, page:Int) {
         view.displayProgress()
 
-        compositeDisposable.add(withdraw.getWithdrawHistori(token, "application/json", page)
+        compositeDisposable.add(baseApiService.getWithdrawHistori(token, "application/json", page)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<WithdrawHisResponse>(){

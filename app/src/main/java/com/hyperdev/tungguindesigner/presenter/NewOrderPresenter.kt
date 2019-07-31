@@ -6,9 +6,9 @@ import com.hyperdev.tungguindesigner.model.ordernotification.AcceptResponse
 import com.hyperdev.tungguindesigner.model.ordernotification.CheckOrderResponse
 import com.hyperdev.tungguindesigner.model.ordernotification.RejectResponse
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
-import com.hyperdev.tungguindesigner.repository.GetOrderRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.NewOrderView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -18,7 +18,7 @@ import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
 class NewOrderPresenter(private val view: NewOrderView.View,
-                        private val order: GetOrderRepositoryImpl,
+                        private val baseApiService: BaseApiService,
                         private val scheduler: SchedulerProvider) : NewOrderView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -26,7 +26,7 @@ class NewOrderPresenter(private val view: NewOrderView.View,
     override fun getUserProfile(token: String, context: Context) {
         view.onDisplayProgress()
 
-        compositeDisposable.add(order.getProfile(token, "application/json")
+        compositeDisposable.add(baseApiService.getProfile(token, "application/json")
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<ProfileResponse>(){
@@ -64,7 +64,7 @@ class NewOrderPresenter(private val view: NewOrderView.View,
     override fun acceptRequest(context: Context, token: String, order_id: String) {
         view.onDisplayProgress()
 
-        compositeDisposable.add(order.acceptOrder(token,"application/json", order_id)
+        compositeDisposable.add(baseApiService.acceptOrder(token,"application/json", order_id)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<AcceptResponse>(){
@@ -93,7 +93,7 @@ class NewOrderPresenter(private val view: NewOrderView.View,
     override fun rejectRequest(context: Context, token: String, order_id: String) {
         view.onDisplayProgress()
 
-        compositeDisposable.add(order.rejectOrder(token, "application/json", order_id)
+        compositeDisposable.add(baseApiService.rejectOrder(token, "application/json", order_id)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<RejectResponse>(){
@@ -121,7 +121,7 @@ class NewOrderPresenter(private val view: NewOrderView.View,
     override fun checkOrderOffer(token: String, order_id: String) {
         view.onDisplayProgress()
 
-        compositeDisposable.add(order.checkOrderOffer(token, order_id)
+        compositeDisposable.add(baseApiService.checkOrderOffer(token, order_id)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<CheckOrderResponse>(){

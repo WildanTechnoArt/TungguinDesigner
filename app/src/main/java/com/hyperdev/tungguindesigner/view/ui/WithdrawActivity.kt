@@ -9,9 +9,8 @@ import android.widget.Toast
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.RequestWithdrawPresenter
-import com.hyperdev.tungguindesigner.repository.WithdrawRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.RequestWithdrawView
 import kotlinx.android.synthetic.main.activity_withdraw.*
@@ -33,9 +32,11 @@ class WithdrawActivity : AppCompatActivity(), RequestWithdrawView.View {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setHomeButtonEnabled(true)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.apply {
+            setDisplayShowHomeEnabled(true)
+            setHomeButtonEnabled(true)
+            setDisplayHomeAsUpEnabled(true)
+        }
 
         initMain()
 
@@ -57,16 +58,15 @@ class WithdrawActivity : AppCompatActivity(), RequestWithdrawView.View {
 
     private fun initMain(){
 
-        saldo_wallet.text = intent.getStringExtra("saldoWallet").toString()
+        saldo_wallet.text = intent?.getStringExtra("saldoWallet").toString()
 
         getToken = SharedPrefManager.getInstance(this@WithdrawActivity).token.toString()
 
-        baseApiService = NetworkUtil.getClient(this@WithdrawActivity)!!
+        baseApiService = NetworkClient.getClient(this@WithdrawActivity)!!
             .create(BaseApiService::class.java)
 
-        val repository = WithdrawRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = RequestWithdrawPresenter(this@WithdrawActivity, this, repository, scheduler)
+        presenter = RequestWithdrawPresenter(this@WithdrawActivity, this, baseApiService, scheduler)
 
     }
 
@@ -76,12 +76,12 @@ class WithdrawActivity : AppCompatActivity(), RequestWithdrawView.View {
     }
 
     override fun showPregressBar() {
-        progressBar.visibility = View.VISIBLE
+        progress_bar.visibility = View.VISIBLE
         shadow.visibility = View.VISIBLE
     }
 
     override fun hidePregressBar() {
-        progressBar.visibility = View.GONE
+        progress_bar.visibility = View.GONE
         shadow.visibility = View.GONE
     }
 

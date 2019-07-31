@@ -1,27 +1,16 @@
 package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RatingBar
-import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniItem
+import kotlinx.android.synthetic.main.testimoni_layout_item.view.*
 
 class TestimoniHistoriAdapter(private var testimoniItem: ArrayList<TestimoniItem>)
     : RecyclerView.Adapter<TestimoniHistoriAdapter.ViewHolder>(){
-
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-        //Deklarasi View
-        val getListFormattedDate: TextView = itemView.findViewById(R.id.listFormattedDate)
-        val getListFormattedAmount: TextView = itemView.findViewById(R.id.listFormattedAmount)
-        val getListFormattedID: TextView = itemView.findViewById(R.id.listFormattedID)
-        val getListRating: RatingBar = itemView.findViewById(R.id.rating)
-        val getTestimoniDesigner: TextView = itemView.findViewById(R.id.testimoni_designer)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.testimoni_layout_item, parent, false)
@@ -44,10 +33,12 @@ class TestimoniHistoriAdapter(private var testimoniItem: ArrayList<TestimoniItem
         val getRating = testimoniItem[position].starRating
         val getTestimoni = testimoniItem[position].designerTestimonial.toString()
 
-        holder.getListFormattedDate.text = getDate
-        holder.getListFormattedAmount.text = "Tip: $getAmount"
-        holder.getListFormattedID.text = "ID: $getID"
-        holder.getListRating.rating = getRating?.toFloat()!!
-        holder.getTestimoniDesigner.text = getTestimoni
+        holder.itemView.listFormattedDate.text = getDate
+        holder.itemView.listFormattedAmount.text = "Tip: $getAmount"
+        holder.itemView.listFormattedID.text = "ID: $getID"
+        holder.itemView.rating.rating = getRating?.toFloat()!!
+        holder.itemView.testimoni_designer.text = getTestimoni
     }
+
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 }

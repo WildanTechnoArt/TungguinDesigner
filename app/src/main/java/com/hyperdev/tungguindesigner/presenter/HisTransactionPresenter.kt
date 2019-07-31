@@ -3,9 +3,9 @@ package com.hyperdev.tungguindesigner.presenter
 import android.content.Context
 import android.widget.Toast
 import com.hyperdev.tungguindesigner.model.transactionhistori.TransactionResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
-import com.hyperdev.tungguindesigner.repository.TransactionHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.TransactionHisView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException
 
 class HisTransactionPresenter(
     private val view: TransactionHisView.View,
-    private val transaction: TransactionHisRepositoryImpl,
+    private val baseApiService: BaseApiService,
     private val scheduler: SchedulerProvider
 ) : TransactionHisView.Presenter {
 
@@ -26,7 +26,7 @@ class HisTransactionPresenter(
         view.displayProgress()
 
         compositeDisposable.add(
-            transaction.getTransactionHistori(token, "application/json", page)
+            baseApiService.getTransactionHistori(token, "application/json", page)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(scheduler.io())
                 .subscribeWith(object : ResourceSubscriber<TransactionResponse>() {

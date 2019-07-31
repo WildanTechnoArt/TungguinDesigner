@@ -25,7 +25,8 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="#FFFFFF" android:padding="8dp">
+                        android:padding="16dp"
+                        android:background="#FFFFFF">
 
                     <ImageView
                             android:src="@drawable/logo_full"
@@ -35,11 +36,6 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
-                            android:layout_marginTop="8dp"
-                            android:layout_marginLeft="8dp"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginEnd="8dp"
-                            android:layout_marginRight="8dp"
                             tools:ignore="ContentDescription"/>
 
                     <View android:layout_width="match_parent"
@@ -49,11 +45,7 @@
                           app:layout_constraintStart_toStartOf="parent"
                           app:layout_constraintEnd_toEndOf="parent"
                           android:layout_marginTop="12dp"
-                          app:layout_constraintTop_toBottomOf="@+id/imageView"
-                          android:layout_marginEnd="8dp"
-                          android:layout_marginRight="8dp"
-                          android:layout_marginLeft="8dp"
-                          android:layout_marginStart="8dp"/>
+                          app:layout_constraintTop_toBottomOf="@+id/imageView"/>
 
                     <TextView
                             android:text="Status : "
@@ -61,8 +53,6 @@
                             android:layout_height="0dp"
                             android:id="@+id/tv_status"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:layout_marginLeft="8dp"
-                            android:layout_marginStart="8dp"
                             android:textStyle="bold"
                             android:textSize="15sp"
                             app:layout_constraintBottom_toBottomOf="@+id/status_designer"
@@ -77,8 +67,6 @@
                             android:id="@+id/status_designer"
                             app:layout_constraintStart_toEndOf="@+id/tv_status"
                             app:layout_constraintEnd_toEndOf="parent"
-                            android:layout_marginEnd="8dp"
-                            android:layout_marginRight="8dp"
                             android:layout_marginTop="8dp"
                             app:layout_constraintTop_toBottomOf="@+id/line"
                             android:textStyle="bold"
@@ -86,18 +74,29 @@
                             android:checked="false" tools:ignore="HardcodedText"/>
 
                     <TextView
-                            android:text="Selamat Bekerja"
+                            android:text="@string/none"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/tv_selamat_bekerja"
-                            android:layout_marginTop="8dp"
+                            android:id="@+id/tv_designer_name"
                             app:layout_constraintTop_toBottomOf="@+id/status_designer"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            android:layout_marginBottom="8dp"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="6dp"/>
+
+                    <TextView
+                            android:text="Selamat Bekerja"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tv_happy_working"
+                            app:layout_constraintTop_toBottomOf="@+id/tv_designer_name"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
                             android:textSize="15sp"
-                            android:textStyle="bold" tools:ignore="HardcodedText"/>
+                            android:textStyle="bold" tools:ignore="HardcodedText"
+                            android:visibility="gone"/>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -150,14 +149,15 @@
                           android:layout_height="1dp"
                           android:background="#FFE4E4E4"
                           android:layout_marginEnd="16dp"
-                          android:layout_marginStart="16dp" android:layout_marginTop="18dp"
+                          android:layout_marginStart="16dp"
+                          android:layout_marginTop="18dp"
                           android:layout_marginBottom="18dp"/>
 
                     <TextView
-                            android:text="@string/txt_total_order"
+                            android:text="@string/total_fee"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/total_order"
+                            android:id="@+id/tv_total_fee"
                             android:textColor="#000000"
                             android:textSize="15sp"
                             android:textStyle="bold"
@@ -166,10 +166,21 @@
                             android:gravity="center"/>
 
                     <TextView
+                            android:text="@string/txt_total_order"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tv_total_order"
+                            android:textColor="#000000"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginEnd="8dp"
+                            android:gravity="center" android:layout_marginTop="4dp"/>
+                    <TextView
                             android:text="@string/txt_this_week_order"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/this_week_order"
+                            android:id="@+id/tv_week_order"
                             android:textColor="#000000"
                             android:textSize="15sp"
                             android:textStyle="bold"
@@ -182,7 +193,7 @@
                             android:text="@string/txt_today_order"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:id="@+id/today_order"
+                            android:id="@+id/tv_today_order"
                             android:textColor="#000000"
                             android:textSize="15sp"
                             android:textStyle="bold"

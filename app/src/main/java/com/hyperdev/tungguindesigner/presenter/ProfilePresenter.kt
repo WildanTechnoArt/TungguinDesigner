@@ -1,16 +1,15 @@
 package com.hyperdev.tungguindesigner.presenter
 
-import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import android.content.Context
-import androidx.fragment.app.Fragment
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.fragment.app.Fragment
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
-import com.hyperdev.tungguindesigner.network.ConnectivityStatus
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
 import com.hyperdev.tungguindesigner.network.Response
-import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.ProfileView
 import com.miguelbcr.ui.rx_paparazzo2.RxPaparazzo
@@ -26,12 +25,12 @@ import java.net.SocketTimeoutException
 
 class ProfilePresenter(private val context: Context,
                        private val view: ProfileView.View,
-                       private val profile: ProfileRepositoryImpl,
+                       private val baseApiService: BaseApiService,
                        private val scheduler: SchedulerProvider) : ProfileView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
 
-    override fun takeImageFromGallry(fragment: androidx.fragment.app.Fragment) {
+    override fun takeImageFromGallry(fragment: Fragment) {
         compositeDisposable.add(
             RxPaparazzo.single(fragment)
                 .usingGallery()
@@ -50,7 +49,7 @@ class ProfilePresenter(private val context: Context,
     override fun getUserProfile(token: String, context: Context) {
         view.displayProgress()
 
-        compositeDisposable.add(profile.getProfile(token, "application/json")
+        compositeDisposable.add(baseApiService.getProfile(token, "application/json")
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .subscribeWith(object : ResourceSubscriber<ProfileResponse>(){
@@ -90,7 +89,7 @@ class ProfilePresenter(private val context: Context,
 
         view.displayProgress()
 
-        profile.updateProfile(authHeader, accept, name, email, phone)
+        baseApiService.updateProfile(authHeader, accept, name, email, phone)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
@@ -108,11 +107,11 @@ class ProfilePresenter(private val context: Context,
                 override fun onError(e: Throwable) {
                     view.hideProgress()
 
-                    if(ConnectivityStatus.isConnected(context)){
+                    if(isConnected(context)){
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }
@@ -132,7 +131,7 @@ class ProfilePresenter(private val context: Context,
 
         view.displayProgress()
 
-        profile.updateProfileWithImage(authHeader, accept, name, email, phone, image)
+        baseApiService.updateProfileWithImage(authHeader, accept, name, email, phone, image)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
@@ -150,11 +149,11 @@ class ProfilePresenter(private val context: Context,
                 override fun onError(e: Throwable) {
                     view.hideProgress()
 
-                    if(ConnectivityStatus.isConnected(context)){
+                    if(isConnected(context)){
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }

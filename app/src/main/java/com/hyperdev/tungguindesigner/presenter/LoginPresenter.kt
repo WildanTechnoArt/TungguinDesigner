@@ -5,9 +5,9 @@ import android.widget.Toast
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.login.LoginResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus
 import com.hyperdev.tungguindesigner.network.Response
-import com.hyperdev.tungguindesigner.repository.LoginRepositoryImp
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.LoginView
 import io.reactivex.Observer
@@ -18,7 +18,7 @@ import retrofit2.HttpException
 import java.net.SocketTimeoutException
 
 class LoginPresenter(private val view: LoginView.View,
-                     private val login: LoginRepositoryImp,
+                     private val baseApiService: BaseApiService,
                      private val scheduler: SchedulerProvider) : LoginView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -26,7 +26,7 @@ class LoginPresenter(private val view: LoginView.View,
     override fun loginUser(context: Context, email: String, password: String) {
         view.showPregressBar()
 
-        login.loginUser(email, password)
+        baseApiService.loginRequest(email, password)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
@@ -50,7 +50,7 @@ class LoginPresenter(private val view: LoginView.View,
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }

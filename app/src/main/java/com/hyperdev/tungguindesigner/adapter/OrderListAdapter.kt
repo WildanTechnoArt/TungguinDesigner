@@ -1,26 +1,19 @@
 package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.NewOrderItem
+import kotlinx.android.synthetic.main.order_item.view.*
 
 class OrderListAdapter(private var item: ArrayList<NewOrderItem>)
     : RecyclerView.Adapter<OrderListAdapter.ViewHolder>(){
 
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-        val listProductName: TextView = itemView.findViewById(R.id.nama_desain)
-        val listFormattedAmount: TextView = itemView.findViewById(R.id.desain_price)
-        val listProductCount: TextView = itemView.findViewById(R.id.number_desain)
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.order_item_layout, parent, false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.order_item, parent, false)
         return ViewHolder(v)
     }
 
@@ -33,8 +26,10 @@ class OrderListAdapter(private var item: ArrayList<NewOrderItem>)
         val getProductAmount = item[position].productPrice
         val getProductCount = item[position].productCount
 
-        holder.listProductName.text = getProductName
-        holder.listFormattedAmount.text = getProductAmount
-        holder.listProductCount.text = "$getProductCount Desain"
+        holder.itemView.nama_desain.text = getProductName
+        holder.itemView.desain_price.text = getProductAmount
+        holder.itemView.number_desain.text = "$getProductCount Desain"
     }
+
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 }

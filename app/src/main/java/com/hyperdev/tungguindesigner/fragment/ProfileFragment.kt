@@ -2,32 +2,32 @@ package com.hyperdev.tungguindesigner.fragment
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import androidx.fragment.app.Fragment
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.Fragment
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.hyperdev.tungguindesigner.GlideApp
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.profile.DataUser
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.ProfilePresenter
 import com.hyperdev.tungguindesigner.presenter.RemoveTokenFCMPresenter
-import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
-import com.hyperdev.tungguindesigner.repository.TokenFCMRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateEmail
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
@@ -70,6 +70,7 @@ class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
     private lateinit var imageFile: MultipartBody.Part
     private lateinit var file: File
     private var updateImage = false
+    private var isActive: Boolean = false
 
     @SuppressLint("SetTextI18n")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -173,16 +174,14 @@ class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
     private fun loadData(){
         getToken = SharedPrefManager.getInstance(context!!).token.toString()
 
-        baseApiService = NetworkUtil.getClient(context!!)!!
+        baseApiService = NetworkClient.getClient(context!!)!!
             .create(BaseApiService::class.java)
 
-        val request = ProfileRepositoryImpl(baseApiService)
-        val requestFCM = TokenFCMRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
 
-        presenter = ProfilePresenter(context!!, this, request, scheduler)
+        presenter = ProfilePresenter(context!!, this, baseApiService, scheduler)
         presenter.getUserProfile("Bearer $getToken", context!!)
-        presenterFCM = RemoveTokenFCMPresenter(context!!, this, requestFCM, scheduler)
+        presenterFCM = RemoveTokenFCMPresenter(context!!, this, baseApiService, scheduler)
     }
 
     private fun editProfile(){
@@ -238,7 +237,11 @@ class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
                     d.dismiss()
                 }
                 logout.setPositiveButton("Ya") { _, _ ->
-                    logoutAndRemoveToken()
+                    if(isActive){
+                        Toast.makeText(context, "Silakan matikan terlebih dahulu status anda", Toast.LENGTH_SHORT).show()
+                    }else{
+                        logoutAndRemoveToken()
+                    }
                 }
                 logout.setCancelable(false)
                 logout.create()
@@ -251,6 +254,8 @@ class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
     @SuppressLint("SetTextI18n")
     override fun displayProfile(profileItem: DataUser) {
 
+        isActive = profileItem.isActive ?: false
+
         GlideApp.with(context!!)
             .load(profileItem.photoUrl.toString())
             .placeholder(R.drawable.circle_profil)
@@ -262,7 +267,9 @@ class ProfileFragment : Fragment(), ProfileView.View, RemoveTokenFCMView.View {
         nomorDesigner.setText(profileItem.phoneNumber.toString())
     }
 
-    override fun onSuccess() {
+    override fun onSuccessRemoveToken() {
+        val manager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(1)
         SharedPrefManager.getInstance(context!!).deleteToken()
         startActivity(Intent(context!!, LoginActivity::class.java))
         (context as Activity).finish()

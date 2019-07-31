@@ -2,26 +2,16 @@ package com.hyperdev.tungguindesigner.adapter
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.model.withdrawhistori.WithdrawItem
+import kotlinx.android.synthetic.main.withdraw_layout_item.view.*
 
 class WithdrawHistoriAdapter(private var historItem: ArrayList<WithdrawItem>)
     : RecyclerView.Adapter<WithdrawHistoriAdapter.ViewHolder>(){
-
-    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-
-        val getListFormattedDate: TextView = itemView.findViewById(R.id.listFormattedDate)
-        val getListFormattedStatus: TextView = itemView.findViewById(R.id.listFormattedStatus)
-        val getListFormattedAmount: TextView = itemView.findViewById(R.id.listFormattedAmount)
-        val getBankName: TextView = itemView.findViewById(R.id.bank_name)
-        val getOwnerName: TextView = itemView.findViewById(R.id.nameOwner)
-        val getNote: TextView = itemView.findViewById(R.id.note)
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.withdraw_layout_item, parent, false)
@@ -46,17 +36,19 @@ class WithdrawHistoriAdapter(private var historItem: ArrayList<WithdrawItem>)
         val noteRefund = historItem[position].refundNote.toString()
         val getColorHex = historItem[position].statusColorHex.toString()
 
-        holder.getListFormattedDate.text = getDate
-        holder.getListFormattedStatus.text = getStatus
-        holder.getListFormattedStatus.setBackgroundColor(Color.parseColor(getColorHex))
-        holder.getListFormattedAmount.text = getAmount
-        holder.getBankName.text = bankName
-        holder.getOwnerName.text = ownerName
+        holder.itemView.listFormattedDate.text = getDate
+        holder.itemView.listFormattedStatus.text = getStatus
+        holder.itemView.listFormattedStatus.setBackgroundColor(Color.parseColor(getColorHex))
+        holder.itemView.listFormattedAmount.text = getAmount
+        holder.itemView.bank_name.text = bankName
+        holder.itemView.nameOwner.text = ownerName
 
         if(noteRefund != "null"){
-            holder.getNote.text = "Catatan: $noteRefund"
+            holder.itemView.note.text = "Catatan: $noteRefund"
         }else{
-            holder.getNote.text = "Catatan: -"
+            holder.itemView.note.text = "Catatan: -"
         }
     }
+
+    inner class ViewHolder(val view: View) : RecyclerView.ViewHolder(view)
 }

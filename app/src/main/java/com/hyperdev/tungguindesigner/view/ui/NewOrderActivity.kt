@@ -15,8 +15,7 @@ import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.NewOrderItem
 import com.hyperdev.tungguindesigner.model.ordernotification.CheckOrderData
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
-import com.hyperdev.tungguindesigner.repository.GetOrderRepositoryImpl
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import kotlinx.android.synthetic.main.activity_new_order.*
 import org.json.JSONArray
@@ -34,6 +33,7 @@ import android.view.animation.AnimationUtils
 import com.hyperdev.tungguindesigner.BuildConfig
 import com.hyperdev.tungguindesigner.model.profile.DataUser
 import com.hyperdev.tungguindesigner.presenter.NewOrderPresenter
+import com.hyperdev.tungguindesigner.utils.UtilsContant.Companion.HASHED_ID
 import com.hyperdev.tungguindesigner.view.NewOrderView
 
 class NewOrderActivity : AppCompatActivity(), NewOrderView.View{
@@ -100,9 +100,9 @@ class NewOrderActivity : AppCompatActivity(), NewOrderView.View{
     private fun initData(){
 
         if(intent.extras != null){
-            orderId = intent.getStringExtra("sendOrderID").toString()
-            totalHarga = intent.getStringExtra("sendTotalHarga").toString()
-            items = intent.getStringExtra("sendItems").toString()
+            orderId = intent?.getStringExtra(HASHED_ID).toString()
+            totalHarga = intent?.getStringExtra("sendTotalHarga").toString()
+            items = intent?.getStringExtra("sendItems").toString()
 
             jsonArray = JSONArray(items)
             for(data in 0 until jsonArray.length()){
@@ -115,10 +115,9 @@ class NewOrderActivity : AppCompatActivity(), NewOrderView.View{
 
             token = SharedPrefManager.getInstance(this@NewOrderActivity).token.toString()
 
-            baseApiService = NetworkUtil.getClient(this@NewOrderActivity)!!
+            baseApiService = NetworkClient.getClient(this@NewOrderActivity)!!
                 .create(BaseApiService::class.java)
 
-            val request = GetOrderRepositoryImpl(baseApiService)
             val scheduler = AppSchedulerProvider()
 
             val layout = LinearLayoutManager(this@NewOrderActivity)
@@ -130,7 +129,7 @@ class NewOrderActivity : AppCompatActivity(), NewOrderView.View{
 
             orderList.adapter = adapter
 
-            presenter = NewOrderPresenter(this, request, scheduler)
+            presenter = NewOrderPresenter(this, baseApiService, scheduler)
             presenter.checkOrderOffer("Bearer $token", orderId)
             presenter.getUserProfile("Bearer $token", this@NewOrderActivity)
 

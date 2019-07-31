@@ -16,9 +16,8 @@ import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.withdrawhistori.WithdrawData
 import com.hyperdev.tungguindesigner.model.withdrawhistori.WithdrawItem
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.HisWithdrawPresenter
-import com.hyperdev.tungguindesigner.repository.WithdrawHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.WithdrawHisView
 import kotlin.properties.Delegates
@@ -35,7 +34,7 @@ class WithdrawHistoriFragment : Fragment(), WithdrawHisView.View {
     private lateinit var baseApiService: BaseApiService
     private val TAG = javaClass.simpleName
     private var adapter by Delegates.notNull<WithdrawHistoriAdapter>()
-    private var page by Delegates.notNull<Int>()
+    private var page: Int = 1
     private lateinit var nextPageURL: String
     private var isLoading by Delegates.notNull<Boolean>()
 
@@ -43,10 +42,8 @@ class WithdrawHistoriFragment : Fragment(), WithdrawHisView.View {
         val view = inflater.inflate(R.layout.fragment_withdraw_histori, container, false)
 
         recyclerView = view.findViewById(R.id.withdrawList)
-        loadingBar = view.findViewById(R.id.progressBar)
+        loadingBar = view.findViewById(R.id.progress_bar)
         textImgNotFound = view.findViewById(R.id.txt_img_not_found)
-
-        page = 1
 
         loadData()
 
@@ -60,16 +57,15 @@ class WithdrawHistoriFragment : Fragment(), WithdrawHisView.View {
     private fun loadData(){
         token = SharedPrefManager.getInstance(context!!).token.toString()
 
-        baseApiService = NetworkUtil.getClient(context!!)!!
+        baseApiService = NetworkClient.getClient(context!!)!!
             .create(BaseApiService::class.java)
 
         val layout = LinearLayoutManager(context!!)
         recyclerView.layoutManager = layout
         recyclerView.setHasFixedSize(true)
 
-        val request = WithdrawHisRepositoryImpl(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = HisWithdrawPresenter(this, request, scheduler)
+        presenter = HisWithdrawPresenter(this, baseApiService, scheduler)
         adapter = WithdrawHistoriAdapter(listHistori as ArrayList<WithdrawItem>)
 
         presenter.getHistoriWithdraw("Bearer $token", context!!, page = page)

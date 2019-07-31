@@ -4,9 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus
 import com.hyperdev.tungguindesigner.network.Response
-import com.hyperdev.tungguindesigner.repository.UpdatePassRepositoryImp
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.UpdatePassView
 import io.reactivex.Observer
@@ -18,7 +18,7 @@ import java.net.SocketTimeoutException
 
 class UpdatePassPresenter(private val context: Context,
                           private val view: UpdatePassView.View,
-                          private val pass: UpdatePassRepositoryImp,
+                          private val baseApiService: BaseApiService,
                           private val scheduler: SchedulerProvider) : UpdatePassView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -29,7 +29,7 @@ class UpdatePassPresenter(private val context: Context,
 
         view.showPregressBar()
 
-        pass.updatePassword(authHeader, accept, name, email, phone, password, c_password)
+        baseApiService.updatePassword(authHeader, accept, name, email, phone, password, c_password)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
@@ -51,7 +51,7 @@ class UpdatePassPresenter(private val context: Context,
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }

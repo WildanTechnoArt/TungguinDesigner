@@ -4,9 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.model.fcm.FcmResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus
 import com.hyperdev.tungguindesigner.network.Response
-import com.hyperdev.tungguindesigner.repository.TokenFCMRepositoryImp
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.RemoveTokenFCMView
 import io.reactivex.Observer
@@ -18,7 +18,7 @@ import java.net.SocketTimeoutException
 
 class RemoveTokenFCMPresenter(private val context: Context,
                               private val view: RemoveTokenFCMView.View,
-                              private val fcm: TokenFCMRepositoryImp,
+                              private val baseApiService: BaseApiService,
                               private val scheduler: SchedulerProvider) : RemoveTokenFCMView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -26,13 +26,13 @@ class RemoveTokenFCMPresenter(private val context: Context,
     override fun removeTokenFCM(authHeader: String, accept: String, token: String?) {
         view.showPregressBar()
 
-        fcm.postTokenFCM(authHeader, accept, token)
+        baseApiService.fcmRequest(authHeader, accept, token)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
             .subscribe(object : Observer<FcmResponse>{
                 override fun onComplete() {
-                    view.onSuccess()
+                    view.onSuccessRemoveToken()
                 }
 
                 override fun onSubscribe(d: Disposable) {
@@ -49,7 +49,7 @@ class RemoveTokenFCMPresenter(private val context: Context,
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }

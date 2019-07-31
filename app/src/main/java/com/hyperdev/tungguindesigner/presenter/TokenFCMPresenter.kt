@@ -1,7 +1,7 @@
 package com.hyperdev.tungguindesigner.presenter
 
 import com.hyperdev.tungguindesigner.model.fcm.FcmResponse
-import com.hyperdev.tungguindesigner.repository.TokenFCMRepositoryImp
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.TokenFCMView
 import io.reactivex.Observer
@@ -9,14 +9,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
-class TokenFCMPresenter(private val fcm: TokenFCMRepositoryImp,
+class TokenFCMPresenter(private val baseApiService: BaseApiService,
                         private val scheduler: SchedulerProvider) : TokenFCMView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
 
     override fun sendTokenFCM(authHeader: String, accept: String, token: String) {
 
-        fcm.postTokenFCM(authHeader, accept, token)
+        baseApiService.fcmRequest(authHeader, accept, token)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())

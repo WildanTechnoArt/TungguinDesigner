@@ -3,9 +3,9 @@ package com.hyperdev.tungguindesigner.presenter
 import android.content.Context
 import android.widget.Toast
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
-import com.hyperdev.tungguindesigner.repository.TestimoniHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.TestimoniHisView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException
 
 class HisTestimoniPresenter(
     private val view: TestimoniHisView.View,
-    private val testimoni: TestimoniHisRepositoryImpl,
+    private val baseApiService: BaseApiService,
     private val scheduler: SchedulerProvider
 ) : TestimoniHisView.Presenter {
 
@@ -26,7 +26,7 @@ class HisTestimoniPresenter(
         view.displayProgress()
 
         compositeDisposable.add(
-            testimoni.getTestimoniHistori(token, "application/json", page)
+            baseApiService.getTestimoniHistori(token, "application/json", page)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(scheduler.io())
                 .subscribeWith(object : ResourceSubscriber<TestimoniResponse>() {

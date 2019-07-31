@@ -2,10 +2,10 @@ package com.hyperdev.tungguindesigner.presenter
 
 import android.content.Context
 import android.widget.Toast
-import com.hyperdev.tungguindesigner.model.historiorder.HistoriOrderResponse
+import com.hyperdev.tungguindesigner.model.historiorder.HistoryOrderResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus.Companion.isConnected
 import com.hyperdev.tungguindesigner.network.HandleError
-import com.hyperdev.tungguindesigner.repository.OrderHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.OrderHisView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException
 
 class HisOrderPresenter(
     private val view: OrderHisView.View,
-    private val order: OrderHisRepositoryImpl,
+    private val baseApiService: BaseApiService,
     private val scheduler: SchedulerProvider
 ) : OrderHisView.Presenter {
 
@@ -26,15 +26,15 @@ class HisOrderPresenter(
         view.displayProgress()
 
         compositeDisposable.add(
-            order.getOrderHistori(token, "application/json", page)
+            baseApiService.getOrderHistori(token, "application/json", page)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(scheduler.io())
-                .subscribeWith(object : ResourceSubscriber<HistoriOrderResponse>() {
+                .subscribeWith(object : ResourceSubscriber<HistoryOrderResponse>() {
                     override fun onComplete() {
                         view.onSuccess()
                     }
 
-                    override fun onNext(t: HistoriOrderResponse) {
+                    override fun onNext(t: HistoryOrderResponse) {
                         try {
                             view.loadWithdrawData(t)
                             t.orderItem?.let { view.loadWithdrawHis(it) }

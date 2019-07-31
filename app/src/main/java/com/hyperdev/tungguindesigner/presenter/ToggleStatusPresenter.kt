@@ -4,9 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import com.google.gson.Gson
 import com.hyperdev.tungguindesigner.model.profile.ProfileResponse
+import com.hyperdev.tungguindesigner.network.BaseApiService
 import com.hyperdev.tungguindesigner.network.ConnectivityStatus
 import com.hyperdev.tungguindesigner.network.Response
-import com.hyperdev.tungguindesigner.repository.ToggleStatusRepositoryImp
 import com.hyperdev.tungguindesigner.utils.SchedulerProvider
 import com.hyperdev.tungguindesigner.view.ToggleStatusView
 import io.reactivex.Observer
@@ -18,7 +18,7 @@ import java.net.SocketTimeoutException
 
 class ToggleStatusPresenter(private val context: Context,
                             private val view: ToggleStatusView.View,
-                            private val toggle: ToggleStatusRepositoryImp,
+                            private val baseApiService: BaseApiService,
                             private val scheduler: SchedulerProvider) : ToggleStatusView.Presenter{
 
     private val compositeDisposable = CompositeDisposable()
@@ -26,7 +26,7 @@ class ToggleStatusPresenter(private val context: Context,
     override fun toggleStatus(authHeader: String, accept: String, status: String, kondisi: Boolean) {
         view.showToggleProgress()
 
-        toggle.toggleStatus(authHeader, accept, status)
+        baseApiService.setToogleStatus(authHeader, accept, status)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(scheduler.io())
             .unsubscribeOn(scheduler.io())
@@ -48,7 +48,7 @@ class ToggleStatusPresenter(private val context: Context,
                         when (e) {
                             is HttpException -> {
                                 val gson = Gson()
-                                val response = gson.fromJson(e.response().errorBody()?.charStream(), Response::class.java)
+                                val response = gson.fromJson(e.response()?.errorBody()?.charStream(), Response::class.java)
                                 val message = response.meta?.message.toString()
                                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                             }

@@ -3,7 +3,7 @@ package com.hyperdev.tungguindesigner.model.profile
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-data class DataUser (
+data class DataUser(
 
     @SerializedName("name")
     @Expose

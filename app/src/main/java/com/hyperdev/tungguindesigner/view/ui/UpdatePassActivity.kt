@@ -9,9 +9,8 @@ import android.widget.Toast
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.UpdatePassPresenter
-import com.hyperdev.tungguindesigner.repository.UpdatePassRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
 import com.hyperdev.tungguindesigner.view.UpdatePassView
@@ -43,12 +42,11 @@ class UpdatePassActivity : AppCompatActivity(), UpdatePassView.View {
 
         getToken = SharedPrefManager.getInstance(this@UpdatePassActivity).token.toString()
 
-        baseApiService = NetworkUtil.getClient(this@UpdatePassActivity)!!
+        baseApiService = NetworkClient.getClient(this@UpdatePassActivity)!!
             .create(BaseApiService::class.java)
 
-        val repository = UpdatePassRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = UpdatePassPresenter(this@UpdatePassActivity, this, repository, scheduler)
+        presenter = UpdatePassPresenter(this@UpdatePassActivity, this, baseApiService, scheduler)
 
         getName = intent?.getStringExtra("userName").toString()
         getEmail = intent?.getStringExtra("userEmail").toString()
@@ -79,7 +77,7 @@ class UpdatePassActivity : AppCompatActivity(), UpdatePassView.View {
             if(newPassword != cPassword){
                 newpassConfirm.error = "Password yang dimasukan tidak sama!"
             }else{
-                progressBar.visibility = View.VISIBLE
+                progress_bar.visibility = View.VISIBLE
                 newpass.isEnabled = false
                 newpassConfirm.isEnabled = false
                 presenter.updatePassword("Bearer $getToken", "application/json", getName, getEmail, getPhone, newPassword, cPassword)
@@ -93,13 +91,13 @@ class UpdatePassActivity : AppCompatActivity(), UpdatePassView.View {
     }
 
     override fun showPregressBar() {
-        progressBar.visibility = View.VISIBLE
+        progress_bar.visibility = View.VISIBLE
         newpass.isEnabled = false
         newpassConfirm.isEnabled = false
     }
 
     override fun hidePregressBar() {
-        progressBar.visibility = View.GONE
+        progress_bar.visibility = View.GONE
         newpass.isEnabled = true
         newpassConfirm.isEnabled = true
     }

@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
     <View
@@ -24,7 +25,6 @@
             android:layout_marginTop="8dp"
             android:text="-"
             android:textSize="14sp"
-            android:layout_marginLeft="8dp"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText"
             android:textStyle="bold"/>
@@ -39,7 +39,6 @@
             android:textSize="14sp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginRight="8dp"
             tools:ignore="HardcodedText"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/rating"/>
@@ -53,7 +52,6 @@
             android:layout_marginTop="6dp"
             app:layout_constraintTop_toBottomOf="@+id/listFormattedID"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             tools:ignore="HardcodedText"/>
 
@@ -63,15 +61,15 @@
             android:id="@+id/rating"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
+            android:stepSize="1"
+            android:theme="@style/RatingBar"
             android:numStars="5"
             android:clickable="false"
             android:layout_marginTop="4dp"
             app:layout_constraintTop_toBottomOf="@+id/listFormattedDate"
-            style="@android:style/Widget.DeviceDefault.Light.RatingBar.Indicator"/>
+            android:isIndicator="true"/>
 
     <TextView
             android:text="Testimoni"
@@ -79,7 +77,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/txt_testimoni"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             app:layout_constraintTop_toBottomOf="@+id/rating"
             android:textStyle="bold"
@@ -94,11 +91,11 @@
             android:layout_height="wrap_content"
             android:id="@+id/testimoni_designer"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             app:layout_constraintTop_toBottomOf="@+id/txt_testimoni"
             android:layout_marginTop="4dp"
             android:textSize="14sp"
-            tools:ignore="HardcodedText" android:textStyle="bold|italic"/>
+            tools:ignore="HardcodedText"
+            android:textStyle="bold|italic"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

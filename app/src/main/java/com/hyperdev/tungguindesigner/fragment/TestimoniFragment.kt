@@ -16,9 +16,8 @@ import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniData
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniItem
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.HisTestimoniPresenter
-import com.hyperdev.tungguindesigner.repository.TestimoniHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.TestimoniHisView
 import kotlin.properties.Delegates
@@ -35,7 +34,7 @@ class TestimoniFragment : Fragment(), TestimoniHisView.View {
     private lateinit var baseApiService: BaseApiService
     private val TAG = javaClass.simpleName
     private var adapter by Delegates.notNull<TestimoniHistoriAdapter>()
-    private var page by Delegates.notNull<Int>()
+    private var page: Int = 1
     private lateinit var nextPageURL: String
     private var isLoading by Delegates.notNull<Boolean>()
 
@@ -45,8 +44,6 @@ class TestimoniFragment : Fragment(), TestimoniHisView.View {
         recyclerView = view.findViewById(R.id.testimoniList)
         textImgNotFound = view.findViewById(R.id.txt_img_not_found)
         swipeLayout = view.findViewById(R.id.refreshLayout)
-
-        page = 1
 
         loadData()
 
@@ -64,16 +61,15 @@ class TestimoniFragment : Fragment(), TestimoniHisView.View {
     private fun loadData(){
         token = SharedPrefManager.getInstance(context!!).token.toString()
 
-        baseApiService = NetworkUtil.getClient(context!!)!!
+        baseApiService = NetworkClient.getClient(context!!)!!
             .create(BaseApiService::class.java)
 
         val layout = LinearLayoutManager(context!!)
         recyclerView.layoutManager = layout
         recyclerView.setHasFixedSize(true)
 
-        val request = TestimoniHisRepositoryImpl(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = HisTestimoniPresenter(this, request, scheduler)
+        presenter = HisTestimoniPresenter(this, baseApiService, scheduler)
         adapter = TestimoniHistoriAdapter(listTestimoni as ArrayList<TestimoniItem>)
 
         presenter.getHistoriTestimoni("Bearer $token", context!!, page = page)
@@ -106,7 +102,7 @@ class TestimoniFragment : Fragment(), TestimoniHisView.View {
             adapter.refreshAdapter(item)
         }
 
-        if(adapter.itemCount.toString() != "0"){
+        if(adapter.itemCount != 0){
             textImgNotFound.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
         }else{

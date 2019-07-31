@@ -2,28 +2,27 @@ package com.hyperdev.tungguindesigner.view.ui
 
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.messaging.FirebaseMessaging
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
-import com.hyperdev.tungguindesigner.fragment.TestimoniFragment
 import com.hyperdev.tungguindesigner.fragment.DashboardFragment
-import com.hyperdev.tungguindesigner.fragment.HistoriFragment
+import com.hyperdev.tungguindesigner.fragment.HistoryFragment
 import com.hyperdev.tungguindesigner.fragment.ProfileFragment
+import com.hyperdev.tungguindesigner.fragment.TestimoniFragment
 import com.hyperdev.tungguindesigner.model.profile.DataUser
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.DesignerPresenter
 import com.hyperdev.tungguindesigner.presenter.TokenFCMPresenter
-import com.hyperdev.tungguindesigner.repository.ProfileRepositoryImpl
-import com.hyperdev.tungguindesigner.repository.TokenFCMRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.ProfileView
 import com.hyperdev.tungguindesigner.view.TokenFCMView
@@ -57,22 +56,33 @@ class Dashboard : AppCompatActivity(), BottomNavigationView.OnNavigationItemSele
 
         postTokenFCM()
 
+        if (intent.extras != null) {
+            val getMessage = intent.getBooleanExtra("get_message", false)
+            if (getMessage) {
+                val alertDialog = AlertDialog.Builder(this).apply {
+                    setMessage("Silakan buka halaman chat di web")
+                    setPositiveButton(
+                        "OK"
+                    ) { dialog, _ -> dialog.dismiss() }
+                }
+                alertDialog.create()
+                alertDialog.show()
+            }
+        }
     }
 
     private fun initData() {
         getToken = SharedPrefManager.getInstance(this@Dashboard).token.toString()
 
-        baseApiService = NetworkUtil.getClient(this@Dashboard)!!
+        baseApiService = NetworkClient.getClient(this@Dashboard)!!
             .create(BaseApiService::class.java)
 
-        val request = ProfileRepositoryImpl(baseApiService)
-        val requestFCM = TokenFCMRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
 
-        presenter = DesignerPresenter(this@Dashboard, request, scheduler)
+        presenter = DesignerPresenter(this@Dashboard, baseApiService, scheduler)
         presenter.getDesignerId("Bearer $getToken", this@Dashboard)
 
-        presenterFCM = TokenFCMPresenter(requestFCM, scheduler)
+        presenterFCM = TokenFCMPresenter(baseApiService, scheduler)
 
         // Mengaktifkan Kembali FCM
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
@@ -82,7 +92,7 @@ class Dashboard : AppCompatActivity(), BottomNavigationView.OnNavigationItemSele
         if (intent.extras != null) {
             val orderAccept = intent.getBooleanExtra("toHistoriOrder", false)
             if (orderAccept) {
-                loadFragment(HistoriFragment())
+                loadFragment(HistoryFragment())
                 bottom_navigation.selectedItemId = R.id.histori
             } else {
                 loadFragment(DashboardFragment())
@@ -139,7 +149,7 @@ class Dashboard : AppCompatActivity(), BottomNavigationView.OnNavigationItemSele
         when (item.itemId) {
             R.id.dashboard -> fragment = DashboardFragment()
             R.id.testimoni -> fragment = TestimoniFragment()
-            R.id.histori -> fragment = HistoriFragment()
+            R.id.histori -> fragment = HistoryFragment()
             R.id.profile -> fragment = ProfileFragment()
         }
 

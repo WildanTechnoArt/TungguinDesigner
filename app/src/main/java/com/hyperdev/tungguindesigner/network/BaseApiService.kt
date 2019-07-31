@@ -3,8 +3,9 @@ package com.hyperdev.tungguindesigner.network
 import com.hyperdev.tungguindesigner.model.TestimoniHistori.TestimoniResponse
 import com.hyperdev.tungguindesigner.model.announcement.AnnouncementResponse
 import com.hyperdev.tungguindesigner.model.chartorder.ChartResponse
+import com.hyperdev.tungguindesigner.model.detailorder.DetailOrderResponse
 import com.hyperdev.tungguindesigner.model.fcm.FcmResponse
-import com.hyperdev.tungguindesigner.model.historiorder.HistoriOrderResponse
+import com.hyperdev.tungguindesigner.model.historiorder.HistoryOrderResponse
 import com.hyperdev.tungguindesigner.model.login.LoginResponse
 import com.hyperdev.tungguindesigner.model.ordernotification.AcceptResponse
 import com.hyperdev.tungguindesigner.model.ordernotification.CheckOrderResponse
@@ -92,7 +93,7 @@ interface BaseApiService {
         @Header("Authorization") authHeader: String,
         @Header("Accept") accept: String,
         @Query("page") page: Int
-    ): Flowable<HistoriOrderResponse>
+    ): Flowable<HistoryOrderResponse>
 
     @POST("designer/wallet/withdraw")
     @FormUrlEncoded
@@ -158,4 +159,10 @@ interface BaseApiService {
         @Path("order_id") orderId: String
     ): Flowable<CheckOrderResponse>
 
+    @GET("designer/order/{order_id}")
+    fun getDetailOrder(
+        @Header("Authorization") authHeader: String,
+        @Header("Accept") accept: String,
+        @Path("order_id") order_id: String
+    ): Flowable<DetailOrderResponse>
 }

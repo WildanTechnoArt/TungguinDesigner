@@ -16,13 +16,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage?) {
 
-        // Membuat Click Listener pada Notifikasi yang Muncul
         val data: MutableMap<String, String>? = remoteMessage?.data
         val type = data?.get("type").toString()
         val title = remoteMessage?.notification?.title.toString()
         val message = remoteMessage?.notification?.body.toString()
 
-        when(type){
+        when (type) {
             "order_accepted" -> {
                 val intent = Intent(this, Dashboard::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -32,13 +31,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    private fun notificationProperties(title: String, message: String, intent: Intent){
+    private fun notificationProperties(title: String, message: String, intent: Intent) {
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            this, 0, intent, PendingIntent.FLAG_ONE_SHOT
+        )
+
         val channelId = "Default"
         val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_tungguin_notify)
+            .setSmallIcon(R.drawable.ic_tungguin_notification)
             .setDefaults(Notification.DEFAULT_ALL)
             .setContentTitle(title)
             .setContentText(message)

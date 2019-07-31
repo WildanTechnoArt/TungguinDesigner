@@ -24,21 +24,20 @@ import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.model.announcement.AnnouncementData
 import com.hyperdev.tungguindesigner.model.chartorder.ChartData
+import com.hyperdev.tungguindesigner.model.profile.DataUser
 import com.hyperdev.tungguindesigner.model.transactionhistori.TransactionData
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.ChartProfilePresenter
 import com.hyperdev.tungguindesigner.presenter.DashboardPresenter
 import com.hyperdev.tungguindesigner.presenter.ToggleStatusPresenter
-import com.hyperdev.tungguindesigner.repository.ChartRepositoryImpl
-import com.hyperdev.tungguindesigner.repository.ToggleStatusRepositoryImp
-import com.hyperdev.tungguindesigner.repository.TransactionHisRepositoryImpl
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
 import com.hyperdev.tungguindesigner.view.ChartOrderView
 import com.hyperdev.tungguindesigner.view.DashboardView
 import com.hyperdev.tungguindesigner.view.ToggleStatusView
 import com.hyperdev.tungguindesigner.view.ui.Dashboard
 import com.hyperdev.tungguindesigner.view.ui.WithdrawActivity
+import kotlinx.android.synthetic.main.fragment_dashboard.*
 import java.io.IOException
 
 class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
@@ -64,9 +63,9 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
         val view = inflater.inflate(R.layout.fragment_dashboard, container, false)
 
         mySaldo = view.findViewById(R.id.my_saldo)
-        thisWeekOrder = view.findViewById(R.id.this_week_order)
-        todayOrder = view.findViewById(R.id.today_order)
-        totalOrder = view.findViewById(R.id.total_order)
+        thisWeekOrder = view.findViewById(R.id.tv_week_order)
+        todayOrder = view.findViewById(R.id.tv_today_order)
+        totalOrder = view.findViewById(R.id.tv_total_order)
         refresh = view.findViewById(R.id.refreshLayout)
         btnWithdraw = view.findViewById(R.id.withdraw)
         switchButton = view.findViewById(R.id.status_designer)
@@ -122,7 +121,7 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
         )
         val channelId = "Default"
         val builder = NotificationCompat.Builder(context!!, channelId)
-            .setSmallIcon(R.drawable.ic_tungguin_notify)
+            .setSmallIcon(R.drawable.ic_tungguin_notification)
             .setDefaults(Notification.DEFAULT_ALL)
             .setContentTitle(title)
             .setContentText(message)
@@ -148,6 +147,7 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
         thisWeekOrder.text = "Order Minggu ini : ${chartData.thisWeek.toString()}"
         todayOrder.text = "Order Hari ini : ${chartData.today.toString()}"
         totalOrder.text = "Total Order : ${chartData.total.toString()} Order"
+        tv_total_fee.text = "Total Fee : ${chartData.totalFee.toString()}"
     }
 
     override fun loaddAnnouncement(text: AnnouncementData) {
@@ -163,9 +163,15 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    override fun showProfile(profileItem: DataUser) {
+        tv_designer_name.text = "Halo ${profileItem.name.toString()}"
+    }
+
     override fun onResume() {
         super.onResume()
         presenter.getDashboardData("Bearer $token", context!!)
+        presenter.getUserProfile("Bearer $token", context!!)
         chartPresenter.getChartItem("Bearer $token", context!!)
         presenter.getAnnouncementData("Bearer $token")
     }
@@ -173,18 +179,15 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
     private fun loadData() {
         token = SharedPrefManager.getInstance(context!!).token.toString()
 
-        baseApiService = NetworkUtil.getClient(context!!)!!
+        baseApiService = NetworkClient.getClient(context!!)!!
             .create(BaseApiService::class.java)
 
-        val request = TransactionHisRepositoryImpl(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = DashboardPresenter(this, request, scheduler)
+        presenter = DashboardPresenter(this, baseApiService, scheduler)
 
-        val chartRequest = ChartRepositoryImpl(baseApiService)
-        chartPresenter = ChartProfilePresenter(this, chartRequest, scheduler)
+        chartPresenter = ChartProfilePresenter(this, baseApiService, scheduler)
 
-        val toggleRequest = ToggleStatusRepositoryImp(baseApiService)
-        presenterStatus = ToggleStatusPresenter(context!!, this, toggleRequest, scheduler)
+        presenterStatus = ToggleStatusPresenter(context!!, this, baseApiService, scheduler)
 
     }
 
@@ -211,12 +214,14 @@ class DashboardFragment : Fragment(), DashboardView.View, ChartOrderView.View,
                 SharedPrefManager.getInstance(context!!).sendStatus(true)
 
                 notificationProperties("Tungguin", "Anda Sedang Aktif", false)
+                tv_happy_working.visibility = View.VISIBLE
             } else {
                 switchButton.text = "Nonaktif"
                 SharedPrefManager.getInstance(context!!).sendStatus(false)
                 switchButton.setTextColor(Color.parseColor("#FFD40101"))
 
                 notificationProperties("Tungguin", "Anda Sedang Nonaktif", true)
+                tv_happy_working.visibility = View.GONE
             }
 
         } catch (e2: IOException) {

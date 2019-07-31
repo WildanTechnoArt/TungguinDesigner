@@ -2,23 +2,24 @@ package com.hyperdev.tungguindesigner.view.ui
 
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Paint
+import android.net.Uri
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.hyperdev.tungguindesigner.R
 import com.hyperdev.tungguindesigner.database.SharedPrefManager
 import com.hyperdev.tungguindesigner.network.BaseApiService
-import com.hyperdev.tungguindesigner.network.NetworkUtil
+import com.hyperdev.tungguindesigner.network.NetworkClient
 import com.hyperdev.tungguindesigner.presenter.LoginPresenter
-import com.hyperdev.tungguindesigner.repository.LoginRepositoryImp
 import com.hyperdev.tungguindesigner.utils.AppSchedulerProvider
+import com.hyperdev.tungguindesigner.utils.UtilsContant.Companion.HASHED_ID
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateEmail
 import com.hyperdev.tungguindesigner.utils.Validation.Companion.validateFields
 import com.hyperdev.tungguindesigner.view.LoginView
 import kotlinx.android.synthetic.main.activity_login.*
+import org.json.JSONException
 import org.json.JSONObject
-import java.lang.NullPointerException
 
 class LoginActivity : AppCompatActivity(), LoginView.View {
 
@@ -38,20 +39,27 @@ class LoginActivity : AppCompatActivity(), LoginView.View {
         setContentView(R.layout.activity_login)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        baseApiService = NetworkUtil.getClient(this@LoginActivity)!!
+        baseApiService = NetworkClient.getClient(this@LoginActivity)!!
             .create(BaseApiService::class.java)
 
-        val repository = LoginRepositoryImp(baseApiService)
         val scheduler = AppSchedulerProvider()
-        presenter = LoginPresenter(this@LoginActivity, repository, scheduler)
+        presenter = LoginPresenter(this@LoginActivity, baseApiService, scheduler)
 
-        btnLogin.setOnClickListener {
+        btn_login.setOnClickListener {
             login()
+        }
+
+        tv_register.paintFlags = Paint.UNDERLINE_TEXT_FLAG
+        tv_register.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("https://app.tungguin.com/designer/register")
+            startActivity(intent)
         }
     }
 
     override fun onStart() {
         super.onStart()
+
         val getUserToken = SharedPrefManager.getInstance(this@LoginActivity).token
         if(getUserToken != null){
 
@@ -59,17 +67,18 @@ class LoginActivity : AppCompatActivity(), LoginView.View {
 
                 try{
                     getTypeAction = intent?.extras?.get("type").toString()
-                    getData = JSONObject(intent.getStringExtra("data").toString())
+                    getData = JSONObject(intent?.getStringExtra("data").toString())
                     getOrderId = getData?.getString("orderId").toString()
                     getItems = getData?.getString("items").toString()
                     totalHarga = getData?.getString("total").toString()
-                }catch (ex: NullPointerException){
+                }catch (ex: JSONException){
                     ex.printStackTrace()
                 }finally {
+
                     when(getTypeAction){
                         "orderAsk" -> {
                             val intent = Intent(this@LoginActivity, NewOrderActivity::class.java)
-                            intent.putExtra("sendOrderID", getOrderId)
+                            intent.putExtra(HASHED_ID, getOrderId)
                             intent.putExtra("sendItems", getItems)
                             intent.putExtra("sendTotalHarga", totalHarga)
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -82,14 +91,23 @@ class LoginActivity : AppCompatActivity(), LoginView.View {
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
                             startActivity(intent)
                             finish()
-                        }else -> {
+                        }
+                        "new_order_message" -> {
+                            val intent = Intent(this@LoginActivity, Dashboard::class.java)
+                            intent.putExtra("get_message", true)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP and Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                            startActivity(intent)
+                            finish()
+                        }
+                        else -> {
                             startActivity(Intent(this@LoginActivity, Dashboard::class.java))
                             finish()
                         }
                     }
                 }
 
-            }else{
+            }
+            else{
                 startActivity(Intent(this@LoginActivity, Dashboard::class.java))
                 finish()
             }
@@ -98,20 +116,19 @@ class LoginActivity : AppCompatActivity(), LoginView.View {
 
     private fun login(){
 
-        //Memasukan DataUser User Pada Variable
-        emailUser = email.text.toString()
-        passUser = pass.text.toString()
+        emailUser = input_email.text.toString()
+        passUser = input_password.text.toString()
 
         var err = 0
 
         if(!validateEmail(emailUser)){
             err++
-            email.error = "Email tidak valid !"
+            input_email.error = "Email tidak valid!"
         }
 
         if(!validateFields(passUser)){
             err++
-            pass.error = "Password tidak boleh kosong !"
+            input_password.error = "Password tidak boleh kosong!"
         }
 
         if(err == 0){
@@ -126,21 +143,15 @@ class LoginActivity : AppCompatActivity(), LoginView.View {
 
     override fun showPregressBar() {
         shadow.visibility = View.VISIBLE
-        progressBar.visibility = View.VISIBLE
-        btnLogin.isEnabled = false
-        email.isEnabled = false
-        pass.isEnabled = false
+        progress_bar.visibility = View.VISIBLE
     }
 
     override fun hidePregressBar() {
         shadow.visibility = View.GONE
-        progressBar.visibility = View.GONE
-        btnLogin.isEnabled = true
-        email.isEnabled = true
-        pass.isEnabled = true
+        progress_bar.visibility = View.GONE
     }
 
     override fun noInternetConnection(message: String) {
-        Snackbar.make(login_page, message, Snackbar.LENGTH_SHORT).show()
+
     }
 }
